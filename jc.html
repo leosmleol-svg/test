@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>LBS.SU | JSON ↔ CSV</title>
+    <style>
+        :root {
+            --bg: #0a0a0a;
+            --card: #141414;
+            --acc: #00ff88;
+            --txt: #eee;
+            --brd: #222;
+            --item: #1c1c1c;
+            --muted: #777;
+            --warn: #ffaa00;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            background: var(--bg);
+            color: var(--txt);
+            font-family: -apple-system, system-ui, monospace;
+            margin: 0;
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--brd);
+            padding: 25px 20px;
+            border-radius: 24px;
+            width: 100%;
+            max-width: 560px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            align-self: flex-start;
+            margin-top: 10px;
+        }
+
+        .ai-banner {
+            background: rgba(0, 255, 136, 0.05);
+            border: 1px dashed var(--acc);
+            color: var(--acc);
+            padding: 10px;
+            border-radius: 14px;
+            font-size: 11px;
+            text-align: center;
+            font-weight: 800;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .header h2 { margin: 0; font-size: 1.4rem; font-weight: 800; }
+        .back-link {
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 14px;
+            border: 1px solid #333;
+            padding: 5px 12px;
+            border-radius: 30px;
+            transition: 0.2s;
+        }
+        .back-link:hover { border-color: var(--acc); color: var(--acc); }
+
+        .mode-switch {
+            display: flex;
+            background: var(--item);
+            border-radius: 40px;
+            padding: 4px;
+            margin-bottom: 20px;
+        }
+        .mode-btn {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            color: var(--muted);
+            transition: 0.2s;
+        }
+        .mode-btn.active {
+            background: var(--acc);
+            color: #0a0a0a;
+        }
+
+        .section-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--muted);
+            margin: 15px 0 8px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        textarea, select {
+            width: 100%;
+            background: var(--item);
+            border: 1px solid var(--brd);
+            border-radius: 16px;
+            padding: 14px 16px;
+            color: var(--txt);
+            font-size: 13px;
+            font-family: 'SF Mono', 'Monaco', monospace;
+            resize: vertical;
+            outline: none;
+            transition: 0.2s;
+        }
+        textarea:focus, select:focus {
+            border-color: var(--acc);
+            box-shadow: 0 0 0 2px rgba(0,255,136,0.1);
+        }
+        textarea { min-height: 140px; }
+
+        select {
+            padding: 12px 16px;
+            cursor: pointer;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .btn {
+            background: var(--item);
+            border: 1px solid var(--brd);
+            color: var(--txt);
+            padding: 12px 18px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            flex: 1;
+            transition: 0.2s;
+            text-align: center;
+        }
+        .btn-primary {
+            background: var(--acc);
+            border-color: var(--acc);
+            color: #0a0a0a;
+            font-weight: 700;
+        }
+        .btn-primary:hover { opacity: 0.9; box-shadow: 0 0 12px rgba(0,255,136,0.3); }
+        .btn-outline:hover { border-color: var(--acc); background: #222; }
+
+        .table-preview {
+            background: #0d0d0d;
+            border: 1px solid var(--brd);
+            border-radius: 16px;
+            padding: 12px;
+            margin-top: 15px;
+            overflow-x: auto;
+            font-size: 12px;
+            max-height: 200px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            color: var(--txt);
+        }
+        th, td {
+            padding: 8px 12px;
+            text-align: left;
+            border-bottom: 1px solid #222;
+            white-space: nowrap;
+        }
+        th {
+            color: var(--acc);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 10px;
+            letter-spacing: 0.5px;
+        }
+        td { font-family: monospace; }
+
+        .copy-btn {
+            background: transparent;
+            border: 1px solid #333;
+            color: var(--muted);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 10px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .copy-btn:hover { border-color: var(--acc); color: var(--acc); }
+
+        .stats {
+            display: flex;
+            gap: 20px;
+            margin-top: 8px;
+            font-size: 11px;
+            color: var(--muted);
+        }
+
+        .example-btn {
+            background: transparent;
+            border: 1px solid #333;
+            color: var(--muted);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 10px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .example-btn:hover { border-color: var(--acc); color: var(--acc); }
+
+        .note {
+            font-size: 10px;
+            color: var(--muted);
+            margin-top: 20px;
+            text-align: center;
+            border-top: 1px solid #222;
+            padding-top: 15px;
+        }
+
+        .error-msg {
+            color: #ff4444;
+            font-size: 12px;
+            margin-top: 8px;
+            padding: 8px 12px;
+            background: rgba(255,68,68,0.1);
+            border-radius: 12px;
+            display: none;
+        }
+        .error-msg.show { display: block; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div class="ai-banner">🔄 JSON ↔ CSV · УМНЫЙ КОНВЕРТЕР</div>
+
+    <div class="header">
+        <h2>🔄 JC</h2>
+        <a href="/" class="back-link">← HUB</a>
+    </div>
+
+    <!-- Переключатель режима -->
+    <div class="mode-switch" id="modeSwitch">
+        <div class="mode-btn active" data-mode="json2csv">📦 JSON → CSV</div>
+        <div class="mode-btn" data-mode="csv2json">📊 CSV → JSON</div>
+    </div>
+
+    <!-- Входные данные -->
+    <div class="section-title">
+        <span id="inputLabel">📥 JSON МАССИВ ОБЪЕКТОВ</span>
+        <button class="example-btn" id="exampleBtn">📋 ПРИМЕР</button>
+    </div>
+    <textarea id="inputData" placeholder="Вставьте данные...">[
+  {"name": "Иван", "age": 25, "city": "Москва"},
+  {"name": "Мария", "age": 30, "city": "СПб"},
+  {"name": "Петр", "age": 28, "city": "Казань"}
+]</textarea>
+
+    <!-- Настройки CSV -->
+    <div id="csvOptions" style="display: none;">
+        <div class="section-title">⚙️ НАСТРОЙКИ CSV</div>
+        <select id="delimiter">
+            <option value=",">Запятая (,)</option>
+            <option value=";">Точка с запятой (;)</option>
+            <option value="\t">Табуляция (TSV)</option>
+            <option value="|">Вертикальная черта (|)</option>
+        </select>
+    </div>
+
+    <!-- Кнопки -->
+    <div class="button-group">
+        <button class="btn btn-primary" id="convertBtn">🔄 КОНВЕРТИРОВАТЬ</button>
+        <button class="btn btn-outline" id="swapBtn">⇄</button>
+    </div>
+
+    <!-- Результат -->
+    <div class="section-title">
+        <span id="outputLabel">📤 CSV РЕЗУЛЬТАТ</span>
+        <button class="copy-btn" id="copyResultBtn">📋 КОПИРОВАТЬ</button>
+    </div>
+    <textarea id="outputData" placeholder="Результат..." readonly></textarea>
+
+    <!-- Ошибка -->
+    <div class="error-msg" id="errorMsg"></div>
+
+    <!-- Предпросмотр таблицы -->
+    <div class="section-title">👁️ ПРЕДПРОСМОТР (первые 5 строк)</div>
+    <div class="table-preview" id="tablePreview">
+        <table id="previewTable">
+            <thead><tr><th>—</th></tr></thead>
+            <tbody><tr><td>—</td></tr></tbody>
+        </table>
+    </div>
+    <div class="stats" id="stats">Строк: 0 · Колонок: 0</div>
+
+    <div class="note">
+        ⚡ Конвертация на клиенте. Данные никуда не уходят.<br>
+        <span style="color: var(--acc);">✓ Поддержка вложенных JSON (flatten)</span>
+    </div>
+</div>
+
+<script>
+    (function(){
+        const modeBtns = document.querySelectorAll('.mode-btn');
+        const inputLabel = document.getElementById('inputLabel');
+        const outputLabel = document.getElementById('outputLabel');
+        const inputData = document.getElementById('inputData');
+        const outputData = document.getElementById('outputData');
+        const convertBtn = document.getElementById('convertBtn');
+        const swapBtn = document.getElementById('swapBtn');
+        const copyBtn = document.getElementById('copyResultBtn');
+        const csvOptions = document.getElementById('csvOptions');
+        const delimiter = document.getElementById('delimiter');
+        const errorMsg = document.getElementById('errorMsg');
+        const previewTable = document.getElementById('previewTable');
+        const stats = document.getElementById('stats');
+        const exampleBtn = document.getElementById('exampleBtn');
+
+        let currentMode = 'json2csv';
+
+        const EXAMPLES = {
+            json2csv: '[\n  {"name": "Иван", "age": 25, "city": "Москва"},\n  {"name": "Мария", "age": 30, "city": "СПб"},\n  {"name": "Петр", "age": 28, "city": "Казань"}\n]',
+            csv2json: 'name,age,city\nИван,25,Москва\nМария,30,СПб\nПетр,28,Казань'
+        };
+
+        function hideError() { errorMsg.classList.remove('show'); }
+        function showError(text) { errorMsg.textContent = text; errorMsg.classList.add('show'); }
+
+        function updateUIMode() {
+            hideError();
+            if (currentMode === 'json2csv') {
+                inputLabel.textContent = '📥 JSON МАССИВ ОБЪЕКТОВ';
+                outputLabel.textContent = '📤 CSV РЕЗУЛЬТАТ';
+                csvOptions.style.display = 'block';
+                inputData.value = EXAMPLES.json2csv;
+            } else {
+                inputLabel.textContent = '📥 CSV ДАННЫЕ (с заголовками)';
+                outputLabel.textContent = '📤 JSON РЕЗУЛЬТАТ';
+                csvOptions.style.display = 'none';
+                inputData.value = EXAMPLES.csv2json;
+            }
+            modeBtns.forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.mode === currentMode);
+            });
+            convertBtn.click();
+        }
+
+        modeBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                currentMode = btn.dataset.mode;
+                updateUIMode();
+            });
+        });
+
+        // Flatten объект
+        function flattenObject(obj, prefix = '') {
+            const result = {};
+            for (const key in obj) {
+                const value = obj[key];
+                const newKey = prefix ? `${prefix}.${key}` : key;
+                if (value && typeof value === 'object' && !Array.isArray(value)) {
+                    Object.assign(result, flattenObject(value, newKey));
+                } else {
+                    result[newKey] = value;
+                }
+            }
+            return result;
+        }
+
+        // JSON → CSV
+        function jsonToCsv(jsonStr) {
+            try {
+                const data = JSON.parse(jsonStr);
+                if (!Array.isArray(data) || data.length === 0) {
+                    throw new Error('Ожидается непустой массив объектов');
+                }
+
+                const flattened = data.map(item => flattenObject(item));
+                const headers = [...new Set(flattened.flatMap(obj => Object.keys(obj)))];
+                
+                const delim = delimiter.value === '\\t' ? '\t' : delimiter.value;
+                const rows = flattened.map(obj => 
+                    headers.map(h => {
+                        const val = obj[h];
+                        if (val === undefined || val === null) return '';
+                        const str = String(val);
+                        return str.includes(delim) || str.includes('"') || str.includes('\n') 
+                            ? `"${str.replace(/"/g, '""')}"` 
+                            : str;
+                    }).join(delim)
+                );
+
+                const csv = [headers.join(delim), ...rows].join('\n');
+                updatePreview(headers, flattened);
+                return csv;
+            } catch (e) {
+                showError('Ошибка JSON: ' + e.message);
+                return '';
+            }
+        }
+
+        // CSV → JSON
+        function csvToJson(csvStr) {
+            try {
+                const lines = csvStr.trim().split('\n');
+                if (lines.length < 2) throw new Error('Минимум 2 строки (заголовки + данные)');
+
+                const detectDelim = (line) => {
+                    const delims = [',', ';', '\t', '|'];
+                    return delims.reduce((a, b) => 
+                        (line.split(a).length >= line.split(b).length) ? a : b
+                    );
+                };
+
+                const delim = detectDelim(lines[0]);
+                const headers = lines[0].split(delim).map(h => h.trim());
+                
+                const data = lines.slice(1).filter(l => l.trim()).map(line => {
+                    const values = line.split(delim);
+                    const obj = {};
+                    headers.forEach((h, i) => {
+                        let val = values[i]?.trim() || '';
+                        if (val.startsWith('"') && val.endsWith('"')) val = val.slice(1, -1).replace(/""/g, '"');
+                        if (!isNaN(val) && val !== '') val = Number(val);
+                        if (val === 'true') val = true;
+                        if (val === 'false') val = false;
+                        obj[h] = val;
+                    });
+                    return obj;
+                });
+
+                updatePreview(headers, data);
+                return JSON.stringify(data, null, 2);
+            } catch (e) {
+                showError('Ошибка CSV: ' + e.message);
+                return '';
+            }
+        }
+
+        function updatePreview(headers, data) {
+            const thead = previewTable.querySelector('thead');
+            const tbody = previewTable.querySelector('tbody');
+            
+            thead.innerHTML = '<tr>' + headers.map(h => `<th>${h}</th>`).join('') + '</tr>';
+            
+            const previewData = data.slice(0, 5);
+            tbody.innerHTML = previewData.map(row => 
+                '<tr>' + headers.map(h => `<td>${row[h] ?? ''}</td>`).join('') + '</tr>'
+            ).join('') || '<tr><td colspan="' + headers.length + '">Нет данных</td></tr>';
+            
+            stats.textContent = `Строк: ${data.length} · Колонок: ${headers.length}`;
+        }
+
+        function convert() {
+            hideError();
+            const input = inputData.value.trim();
+            if (!input) {
+                outputData.value = '';
+                previewTable.querySelector('thead').innerHTML = '<tr><th>—</th></tr>';
+                previewTable.querySelector('tbody').innerHTML = '<tr><td>—</td></tr>';
+                stats.textContent = 'Строк: 0 · Колонок: 0';
+                return;
+            }
+
+            const result = currentMode === 'json2csv' ? jsonToCsv(input) : csvToJson(input);
+            outputData.value = result;
+        }
+
+        function swap() {
+            const temp = inputData.value;
+            inputData.value = outputData.value;
+            outputData.value = temp;
+            convert();
+        }
+
+        function copyResult() {
+            if (!outputData.value) return;
+            outputData.select();
+            navigator.clipboard?.writeText(outputData.value).catch(() => document.execCommand('copy'));
+            copyBtn.textContent = '✅ СКОПИРОВАНО';
+            setTimeout(() => copyBtn.textContent = '📋 КОПИРОВАТЬ', 1500);
+        }
+
+        convertBtn.addEventListener('click', convert);
+        swapBtn.addEventListener('click', swap);
+        copyBtn.addEventListener('click', copyResult);
+        delimiter.addEventListener('change', convert);
+        
+        exampleBtn.addEventListener('click', () => {
+            inputData.value = EXAMPLES[currentMode];
+            convert();
+        });
+
+        updateUIMode();
+    })();
+</script>
+</body>
+</html>

@@ -1,0 +1,663 @@
+/* Jin Board. */
+
+.jin_board {
+	pointer-events: none;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: center;
+	gap: 12px;
+	position: fixed;
+	left: 0;
+	right: 0;
+	bottom: 20px;
+
+	height: 60px;
+	z-index: 999998;
+
+	transition: transform .23s ease-out;
+
+	-webkit-touch-callout: none;
+	  -webkit-user-select: none;
+	   -khtml-user-select: none;
+		 -moz-user-select: none;
+		  -ms-user-select: none;
+			  user-select: none;
+}
+
+.jin_board_box {
+	overflow: hidden;
+	pointer-events: auto;
+
+	padding: 12px;
+	background-color: var(--white);
+	border-radius: 50%;
+	box-shadow: 0 2px 12px rgba(0, 0, 0, .08);
+	cursor: pointer;
+
+	transition: transform .23s ease-out;
+}
+
+.jin_board_box:hover {
+	transform: scale(1.1);
+}
+
+.jin_board_box_icons {
+	width: 24px;
+	height: 24px;
+}
+
+.jin_board_box_icons img {
+	width: 100%;
+	height: auto;
+	margin-top: 24px;
+
+	transition: transform .23s ease-out;
+}
+
+.jin_board_box_icons img:first-child {
+	margin-top: 0;
+}
+
+/* - - - Primary. */
+
+.jin_board_box.primary {
+	padding: 18px;
+	background-image: linear-gradient(135deg, #5ACEFF 0%, #1049F6 100%);
+	background-color: var(--blue);
+}
+
+/* - - - Active. */
+
+.jin_board_box.active .jin_board_box_icons img {
+	transform: translate3d(0, -48px, 0);
+}
+
+.jin_board_box.active_again .jin_board_box_icons img {
+	transform: translate3d(0, -96px, 0);
+}
+
+.jin_board_box.active_end .jin_board_box_icons img {
+	transform: translate3d(0, -144px, 0);
+}
+
+/* - - - Move. */
+
+.jin_board_box.move:nth-child(1) {
+	transform: translate3d(66px, 0, 0);
+}
+
+.jin_board_box.move:nth-child(3) {
+	transform: translate3d(-66px, 0, 0);
+}
+
+.jin_board_box.move:nth-child(1):hover {
+	transform: translate3d(66px, 0, 0) scale(1.1);
+}
+
+.jin_board_box.move:nth-child(3):hover {
+	transform: translate3d(-66px, 0, 0) scale(1.1);
+}
+
+/* - - - Hide. */
+
+.jin_board.hide {
+	transform: translate3d(0, 100px, 0);
+}
+
+.jin_board.hide.edit {
+	transform: translate3d(0, 0, 0);
+}
+
+.jin_board_box.hide:nth-child(1) {
+	transform: translate3d(0, 100px, 0);
+}
+
+.jin_board_box.hide:nth-child(2) {
+	transform: translate3d(0, 160px, 0);
+}
+
+.jin_board_box.hide:nth-child(3) {
+	transform: translate3d(0, 220px, 0);
+}
+
+/* - - - Empty. */
+
+.jin_board_box.empty {
+	visibility: hidden;
+
+	width: 48px;
+	height: 48px;
+	opacity: 0;
+}
+
+.jin_board_box.primary.empty {
+	display: none;
+}
+
+/* Jin Board. */
+
+
+
+/* Jin Window. */
+
+.jin_window {
+	visibility: hidden;
+	pointer-events: none;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-end;
+	justify-content: center;
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+
+	width: 100%;
+	padding-bottom: 100px;
+	z-index: 99999;
+
+	transition: background-color .23s ease-out, .33s visibility .1s linear;
+}
+
+.jin_window.active {
+	visibility: visible;
+	pointer-events: auto;
+
+	background-color: rgba(0, 0, 0, .92);
+
+	transition: none;
+}
+
+.jin_window_animate {
+	overflow: hidden;
+	position: relative;
+
+	max-width: 600px;
+	width: calc(100% - 32px);
+	max-height: calc(100% - 16px);
+	border-radius: 20px;
+	opacity: 0;
+
+	transition: opacity .23s ease-out, transform .23s ease-out;
+	transform-origin: bottom;
+	will-change: transform;
+
+	-webkit-transform: translate3d(0, 12px, 0) scale(.88);
+			transform: translate3d(0, 12px, 0) scale(.88);
+}
+
+.jin_window.active .jin_window_animate {
+	opacity: 1;
+
+	-webkit-transform: translate3d(0, 0, 0) scale(1);
+			transform: translate3d(0, 0, 0) scale(1);
+}
+
+.jin_window_preloader {
+	height: 100%;
+	min-height: 200px;
+	background-image: url('../../images/preloader.svg');
+	background-position: center center;
+	background-repeat: no-repeat;
+	background-size: 80px;
+}
+
+.jin_window_scroll {
+	overflow-x: hidden;
+	overflow-y: scroll;
+
+	width: calc(100% + 32px);
+	max-height: calc(100vh - 116px);
+	padding-right: 32px;
+
+	box-sizing: border-box;
+
+	-webkit-overflow-scrolling: touch;
+		-ms-overflow-style: none;
+			overflow: -moz-scrollbars-none;
+}
+
+.jin_window_scroll::-webkit-scrollbar {
+	width: 0;
+}
+
+.jin_window_of {
+	overflow: hidden;
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+}
+
+.jin_window_of:before {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+
+	pointer-events: none;
+	z-index: 99998;
+	opacity: 0;
+
+	transition: opacity .23s ease-out;
+}
+
+.jin_window_content {
+	position: relative;
+
+	background-color: var(--light_gray);
+	border-radius: 26px;
+}
+
+.jin_window_content.alert {
+	padding-bottom: 46px;
+}
+
+.jin_window_content.fix {
+	padding-bottom: 62px;
+}
+
+.jin_window_content.premium {
+	margin: 40px 0 8px;
+}
+
+.jin_window_content.contact {
+	padding: 16px 16px 24px;
+}
+
+.jin_window_alert {
+	position: fixed;
+	left: 0;
+	right: 0;
+	bottom: 0;
+
+	padding: 16px;
+	background-color: var(--white);
+	border-radius: 0 0 20px 20px;
+	box-shadow: 0 -4px 24px rgba(0, 0, 0, .08);
+	z-index: 2;
+}
+
+.jin_window_alert span {
+	display: block;
+
+	color: var(--text_gray);
+	font-size: 13px;
+	font-weight: 500;
+	text-align: center;
+	line-height: 14px;
+	white-space: nowrap;
+}
+
+.jin_window_button {
+	position: fixed;
+	left: 16px;
+	right: 16px;
+	bottom: 16px;
+
+	z-index: 2;
+}
+
+.jin_window_button.archive {
+	display: flex;
+	gap: 8px;
+}
+
+.jin_window_button.archive > .button:first-child {
+	flex-grow: 1;
+}
+
+.jin_window_error {
+	position: fixed;
+	top: 16px;
+	left: 16px;
+	right: 16px;
+
+	background-color: var(--white);
+	border-radius: 8px;
+	z-index: 2;
+}
+
+.jin_window_error .error {
+	margin: 0;
+}
+
+/* Jin Window. */
+
+
+
+/* Jin Nav. */
+
+.jin_nav {
+	padding: 24px 16px;
+}
+
+.jin_nav_label {
+	margin: 0 10px 16px;
+	padding: 8px 10px;
+	color: var(--text_gray);
+	font-size: 13px;
+	text-align: right;
+	letter-spacing: .1px;
+	border-bottom: 1px solid var(--border);
+}
+
+.jin_nav_li {
+	display: block;
+	position: relative;
+
+	margin: 1px 0;
+	padding: 18px 24px 17px 50px;
+	border-radius: 14px;
+	cursor: pointer;
+
+	transition: background-color .23s ease-out;
+}
+
+.jin_nav_li.toggle {
+	background-color: var(--light_gray_hover);
+}
+
+.jin_nav_li:hover {
+	background-color: var(--light_gray_hover);
+}
+
+.jin_nav_li:active {
+	background-color: var(--light_gray_active);
+}
+
+.jin_nav_li:before {
+	content: '';
+	position: absolute;
+	top: 50%;
+	right: 36px;
+
+	width: 12px;
+	height: 12px;
+	background-image: url('../../images/arrow_left.svg');
+	background-position: center center;
+	background-repeat: no-repeat;
+	background-size: 12px auto;
+	opacity: 0;
+
+	transform: translate3d(0, -50%, 0) rotate(180deg);
+	transition: transform .23s ease-out, right .23s ease-in, opacity .23s ease-out;
+}
+
+.jin_nav_li.quit:before {
+	background-image: url('../../images/arrow_left_redc81e.svg?2');
+}
+
+.jin_nav_li.toggle:before {
+	transform: translate3d(0, -50%, 0) rotate(270deg);
+}
+
+.jin_nav_li.toggle.active:before {
+	right: 28px;
+
+	opacity: 1;
+
+	transform: translate3d(0, -50%, 0) rotate(90deg);
+}
+
+.jin_nav_li.quit:hover {
+	background-color: var(--alert_text_red);
+}
+
+.jin_nav_li:hover:before {
+	right: 28px;
+
+	opacity: 1;
+}
+
+.jin_nav_li_icon {
+	position: absolute;
+	top: 50%;
+	left: 10px;
+
+	height: 20px;
+
+	transform: translate3d(0, -50%, 0);
+
+	transition: transform .23s ease-out;
+}
+
+.jin_nav_li.toggle .jin_nav_li_icon {
+	transform: translate3d(6px, -50%, 0);
+}
+
+.jin_nav_li_title {
+	color: var(--text_black);
+	font-size: 15px;
+}
+
+.jin_nav_li.quit .jin_nav_li_title {
+	color: var(--red);
+}
+
+.jin_nav_li:hover .jin_nav_li_icon {
+	transform: translate3d(6px, -50%, 0) rotateY(180deg);
+
+	transition: transform .43s ease-out;
+}
+
+.jin_nav_li_pro,
+.jin_nav_li_max,
+.jin_nav_li_ultra,
+.jin_nav_li_pin,
+.jin_nav_li_add {
+	content: '';
+	position: absolute;
+	top: 50%;
+	right: 26px;
+
+	width: 16px;
+	height: 16px;
+	background-position: center;
+	background-repeat: no-repeat;
+	background-size: 100% auto;
+	z-index: 1;
+
+	transform: translate3d(0, -50%, 0);
+	transition: right .23s ease-in, opacity .23s ease-out;
+}
+
+.jin_nav_li:hover .jin_nav_li_pro,
+.jin_nav_li:hover .jin_nav_li_max,
+.jin_nav_li:hover .jin_nav_li_ultra,
+.jin_nav_li:hover .jin_nav_li_pin,
+.jin_nav_li:hover .jin_nav_li_add {
+	right: 36px;
+
+	opacity: 0;
+}
+
+.jin_nav_li_pro {
+	background-image: url('../../images/pro_icon_mini.svg');
+}
+
+.jin_nav_li_max {
+	background-image: url('../../images/max_icon_mini.svg');
+}
+
+.jin_nav_li_ultra {
+	background-image: url('../../images/ultra_icon_mini.svg');
+}
+
+.jin_nav_li_add {
+	background-image: url('../../images/jin/add.border.svg');
+}
+
+.jin_nav_li_pin:before {
+	content: '';
+	position: absolute;
+	top: 4px;
+	right: 4px;
+
+	width: 8px;
+	height: 8px;
+	background-color: var(--red);
+	border-radius: 50%;
+}
+
+.jin_nav_li.active .jin_nav_li_pin {
+	opacity: 0;
+}
+
+/* Jin Nav. */
+
+
+
+/* Jin Edit. */
+
+.jin_edit {
+	position: relative;
+}
+
+.jin_edit_block.sort {
+	position: relative;
+
+	transition: transform .23s ease-out;
+}
+
+.jin_edit_block:before {
+	content: '';
+	position: absolute;
+	top: -12px;
+	left: -12px;
+	right: -12px;
+	bottom: -12px;
+
+	background-color: transparent;
+	border: 2px dashed transparent;
+	border-radius: 20px;
+	z-index: -1;
+
+	transition: background-color .23s ease-out, border-color .23s ease-out, box-shadow .23s ease-out;
+}
+
+.jin_edit_block.unsort:before {
+	display: none;
+}
+
+.jin_edit_block.sort:before {
+	border-color: var(--purple);
+}
+
+.jin_edit_block.sort:hover:before {
+	border: 2px dashed var(--blue);
+}
+
+.jin_edit_block.sort.jin_edit_helper:before {
+	border: 2px dashed var(--blue);
+	box-shadow: 8px 20px 20px -12px rgba(49, 94, 251, .72);
+}
+
+.jin_edit_block.jin_edit_helper.sort > div {
+	margin-top: 0;
+}
+
+.jin_edit_block.sort > *,
+.jin_edit_block.sort .jin_edit_clickable > *,
+.jin_edit_block.sort .peppermint-slides > * {
+	pointer-events: none;
+}
+
+.jin_edit_block.sort .jin_edit_clickable,
+.jin_edit_block.sort .peppermint-slides {
+	pointer-events: auto;
+}
+
+.jin_edit_placeholder {
+	position: relative;
+
+	margin-top: 32px;
+}
+
+.jin_edit_placeholder:before {
+	content: '';
+	position: absolute;
+	top: -8px;
+	left: -8px;
+	right: -8px;
+	bottom: -8px;
+
+	border: 1px dashed var(--blue);
+	border-radius: 16px;
+	z-index: -1;
+}
+
+.jin_edit_helper {
+	transform: rotate(4deg) !important;
+}
+
+.jin_edit_handle {
+	pointer-events: auto !important;
+	position: absolute;
+	top: calc(50% - 14px);
+	left: -26px;
+
+	width: 28px;
+	height: 28px;
+	background-color: var(--white);
+	background-image: url('../../images/jin/burger.blackc81e.svg?2');
+	background-position: center;
+	background-repeat: no-repeat;
+	background-size: 12px auto;
+	border-radius: 50%;
+	box-shadow: 0 2px 12px rgba(0, 0, 0, .08);
+	cursor: move;
+	z-index: 2;
+}
+
+.jin_edit_right {
+	pointer-events: auto !important;
+	position: absolute;
+	top: 50%;
+	right: -26px;
+	display: flex;
+	flex-wrap: wrap;
+	flex-direction: column;
+	gap: 8px;
+
+	z-index: 2;
+
+	transform: translate3d(0, -50%, 0);
+}
+
+.jin_edit_add {
+	width: 28px;
+	height: 28px;
+	background-color: var(--white);
+	background-image: url('../../images/jin/add.blackc81e.svg?2');
+	background-position: center;
+	background-repeat: no-repeat;
+	background-size: 12px auto;
+	border-radius: 50%;
+	box-shadow: 0 2px 12px rgba(0, 0, 0, .08);
+	cursor: pointer;
+}
+
+.jin_edit_settings {
+	width: 28px;
+	height: 28px;
+	background-color: var(--white);
+	background-image: url('../../images/jin/settings.blackc81e.svg?2');
+	background-position: center;
+	background-repeat: no-repeat;
+	background-size: 12px auto;
+	border-radius: 50%;
+	box-shadow: 0 2px 12px rgba(0, 0, 0, .08);
+	cursor: pointer;
+}
+
+.jin_edit_clickable {
+	cursor: pointer;
+}
+
+/* Jin Edit. */

@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>LBS.SU | VIDEO CODER</title>
+    <style>
+        :root { --bg: #0a0a0a; --card: #141414; --acc: #00ff88; --txt: #eee; --brd: #222; --item: #1c1c1c; --muted: #777; --warn: #ffaa00; --danger: #ff4444; }
+        * { box-sizing: border-box; }
+        body { background: var(--bg); color: var(--txt); font-family: -apple-system, system-ui, sans-serif; margin: 0; padding: 15px; display: flex; justify-content: center; min-height: 100vh; }
+        .card { background: var(--card); border: 1px solid var(--brd); padding: 25px 20px; border-radius: 24px; width: 100%; max-width: 600px; box-shadow: 0 20px 40px rgba(0,0,0,0.4); align-self: flex-start; margin-top: 10px; }
+        .ai-banner { background: rgba(0,255,136,0.05); border: 1px dashed var(--acc); color: var(--acc); padding: 10px; border-radius: 14px; font-size: 11px; text-align: center; font-weight: 800; text-transform: uppercase; margin-bottom: 20px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .header h2 { margin: 0; font-size: 1.4rem; font-weight: 800; }
+        .back-link { color: var(--muted); text-decoration: none; font-size: 14px; border: 1px solid #333; padding: 5px 12px; border-radius: 30px; }
+        .back-link:hover { border-color: var(--acc); color: var(--acc); }
+
+        .mode-switch { display: flex; background: var(--item); border-radius: 40px; padding: 4px; margin-bottom: 20px; }
+        .mode-btn { flex: 1; padding: 12px; text-align: center; border-radius: 30px; font-weight: 600; font-size: 14px; cursor: pointer; color: var(--muted); transition: 0.2s; }
+        .mode-btn.active { background: var(--acc); color: #0a0a0a; }
+
+        .section-title { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin: 20px 0 10px 0; display: flex; justify-content: space-between; align-items: center; }
+
+        .dropzone { border: 2px dashed #333; border-radius: 20px; padding: 30px; text-align: center; cursor: pointer; transition: 0.2s; margin: 15px 0; background: rgba(0,0,0,0.2); }
+        .dropzone:hover { border-color: var(--acc); background: rgba(0,255,136,0.05); }
+        .dropzone input { display: none; }
+        .dropzone.dragover { border-color: var(--acc); background: rgba(0,255,136,0.1); }
+
+        .video-preview { text-align: center; margin: 15px 0; padding: 15px; background: #0d0d0d; border-radius: 16px; border: 1px solid var(--brd); }
+        .video-preview video { max-width: 100%; max-height: 200px; border-radius: 12px; }
+        .placeholder { color: var(--muted); padding: 20px; font-size: 14px; }
+
+        textarea { width: 100%; background: var(--item); border: 1px solid var(--brd); border-radius: 16px; padding: 14px 16px; color: var(--txt); font-size: 12px; font-family: 'SF Mono', monospace; outline: none; resize: vertical; min-height: 120px; }
+        textarea:focus { border-color: var(--acc); }
+
+        .progress-container { margin: 15px 0; display: none; }
+        .progress-bar-bg { width: 100%; height: 6px; background: #222; border-radius: 10px; overflow: hidden; }
+        .progress-bar-fill { width: 0%; height: 100%; background: var(--acc); transition: 0.3s; }
+        .progress-text { font-size: 12px; color: var(--muted); margin-top: 5px; text-align: center; }
+
+        .button-group { display: flex; gap: 10px; margin: 15px 0; flex-wrap: wrap; }
+        .btn { background: var(--item); border: 1px solid var(--brd); color: var(--txt); padding: 12px 18px; border-radius: 40px; font-weight: 600; font-size: 14px; cursor: pointer; flex: 1; min-width: 120px; transition: 0.2s; }
+        .btn-primary { background: var(--acc); border-color: var(--acc); color: #0a0a0a; }
+        .btn-primary:hover { opacity: 0.9; box-shadow: 0 0 12px rgba(0,255,136,0.3); }
+        .btn-outline:hover { border-color: var(--acc); background: #222; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .copy-btn { background: transparent; border: 1px solid #333; color: var(--muted); padding: 4px 12px; border-radius: 20px; font-size: 10px; cursor: pointer; }
+        .copy-btn:hover { border-color: var(--acc); color: var(--acc); }
+
+        .file-info { font-size: 12px; color: var(--muted); margin-top: 5px; }
+        .error-msg { color: var(--danger); font-size: 12px; margin-top: 8px; padding: 8px 12px; background: rgba(255,68,68,0.1); border-radius: 12px; display: none; }
+        .error-msg.show { display: block; }
+        .success-msg { color: var(--acc); font-size: 12px; margin-top: 8px; padding: 8px 12px; background: rgba(0,255,136,0.1); border-radius: 12px; display: none; }
+        .success-msg.show { display: block; }
+
+        .warning-box { background: rgba(255,170,0,0.1); border: 1px solid var(--warn); color: var(--warn); padding: 12px; border-radius: 14px; font-size: 11px; margin: 15px 0; }
+        .note { font-size: 10px; color: var(--muted); margin-top: 20px; text-align: center; border-top: 1px solid #222; padding-top: 15px; }
+    </style>
+</head>
+<body>
+<div class="card">
+    <div class="ai-banner">🎬 VIDEO CODER · ВИДЕО ↔ BASE64 TXT</div>
+    <div class="header"><h2>🎬 VID</h2><a href="/" class="back-link">← HUB</a></div>
+
+    <div class="warning-box">
+        ⚠️ ВНИМАНИЕ: Видео в Base64 занимает много места. Максимальный размер: 50 МБ.
+    </div>
+
+    <!-- Переключатель режимов -->
+    <div class="mode-switch" id="modeSwitch">
+        <div class="mode-btn active" data-mode="encode">🎬 ВИДЕО → TXT</div>
+        <div class="mode-btn" data-mode="decode">📄 TXT → ВИДЕО</div>
+    </div>
+
+    <!-- ===== РЕЖИМ КОДИРОВАНИЯ ===== -->
+    <div id="encodeMode">
+        <div class="dropzone" id="videoDropzone">
+            <input type="file" id="videoInput" accept="video/*">
+            <div style="font-size: 32px; margin-bottom: 8px;">🎥</div>
+            <div>Нажмите или перетащите видео</div>
+            <div style="font-size: 11px; color: var(--muted); margin-top: 8px;">MP4, WebM, MOV, AVI</div>
+        </div>
+
+        <div class="video-preview" id="videoPreview">
+            <div class="placeholder">Предпросмотр видео</div>
+        </div>
+
+        <div class="file-info" id="videoInfo"></div>
+
+        <div class="progress-container" id="encodeProgress">
+            <div class="progress-bar-bg"><div class="progress-bar-fill" id="encodeBar"></div></div>
+            <div class="progress-text" id="encodeProgressText">Обработка...</div>
+        </div>
+
+        <div class="button-group">
+            <button class="btn btn-primary" id="encodeBtn" disabled>🔒 КОДИРОВАТЬ В TXT</button>
+        </div>
+
+        <div class="section-title">
+            <span>📤 BASE64 (СОХРАНИТЬ КАК TXT)</span>
+            <button class="copy-btn" id="copyBase64Btn" disabled>📋 Копировать</button>
+        </div>
+        <textarea id="base64Output" placeholder="Base64 код появится здесь..." readonly></textarea>
+        
+        <div class="button-group">
+            <button class="btn btn-outline" id="downloadTxtBtn" disabled>💾 СКАЧАТЬ TXT ФАЙЛ</button>
+            <button class="btn btn-outline" id="clearEncodeBtn">🗑️ ОЧИСТИТЬ</button>
+        </div>
+
+        <div class="error-msg" id="encodeError"></div>
+        <div class="success-msg" id="encodeSuccess"></div>
+    </div>
+
+    <!-- ===== РЕЖИМ ДЕКОДИРОВАНИЯ ===== -->
+    <div id="decodeMode" style="display:none;">
+        <div class="section-title">
+            <span>📥 ЗАГРУЗИТЕ TXT ФАЙЛ ИЛИ ВСТАВЬТЕ BASE64</span>
+        </div>
+
+        <div class="dropzone" id="txtDropzone" style="padding: 20px;">
+            <input type="file" id="txtInput" accept=".txt,text/plain">
+            <div>📁 Нажмите или перетащите TXT файл</div>
+            <div style="font-size: 11px; color: var(--muted); margin-top: 8px;">или вставьте Base64 ниже</div>
+        </div>
+
+        <textarea id="base64Input" placeholder="Или вставьте Base64 код сюда..." style="margin-top: 15px;"></textarea>
+
+        <div class="progress-container" id="decodeProgress">
+            <div class="progress-bar-bg"><div class="progress-bar-fill" id="decodeBar"></div></div>
+            <div class="progress-text" id="decodeProgressText">Восстановление...</div>
+        </div>
+
+        <div class="button-group">
+            <button class="btn btn-primary" id="decodeBtn">🔓 ДЕКОДИРОВАТЬ ВИДЕО</button>
+        </div>
+
+        <div class="video-preview" id="decodedVideoPreview">
+            <div class="placeholder">Здесь появится восстановленное видео</div>
+        </div>
+
+        <div class="file-info" id="decodedVideoInfo"></div>
+
+        <div class="button-group">
+            <button class="btn btn-outline" id="downloadVideoBtn" disabled>💾 СКАЧАТЬ ВИДЕО</button>
+            <button class="btn btn-outline" id="clearDecodeBtn">🗑️ ОЧИСТИТЬ</button>
+        </div>
+
+        <div class="error-msg" id="decodeError"></div>
+        <div class="success-msg" id="decodeSuccess"></div>
+    </div>
+
+    <div class="note">
+        ⚡ Видео → Base64 → TXT и обратно · Всё на клиенте<br>
+        <span style="color: var(--acc);">✓ Без отправки на сервер · Макс. 50 МБ</span>
+    </div>
+</div>
+
+<script>
+(function(){
+    "use strict";
+
+    // === ЭЛЕМЕНТЫ ===
+    const modes = document.querySelectorAll('.mode-btn');
+    const encodeModeDiv = document.getElementById('encodeMode');
+    const decodeModeDiv = document.getElementById('decodeMode');
+
+    // Encode
+    const videoInput = document.getElementById('videoInput');
+    const videoDropzone = document.getElementById('videoDropzone');
+    const videoPreview = document.getElementById('videoPreview');
+    const videoInfo = document.getElementById('videoInfo');
+    const encodeBtn = document.getElementById('encodeBtn');
+    const base64Output = document.getElementById('base64Output');
+    const copyBase64Btn = document.getElementById('copyBase64Btn');
+    const downloadTxtBtn = document.getElementById('downloadTxtBtn');
+    const clearEncodeBtn = document.getElementById('clearEncodeBtn');
+    const encodeProgress = document.getElementById('encodeProgress');
+    const encodeBar = document.getElementById('encodeBar');
+    const encodeProgressText = document.getElementById('encodeProgressText');
+    const encodeError = document.getElementById('encodeError');
+    const encodeSuccess = document.getElementById('encodeSuccess');
+
+    // Decode
+    const txtInput = document.getElementById('txtInput');
+    const txtDropzone = document.getElementById('txtDropzone');
+    const base64Input = document.getElementById('base64Input');
+    const decodeBtn = document.getElementById('decodeBtn');
+    const decodedVideoPreview = document.getElementById('decodedVideoPreview');
+    const decodedVideoInfo = document.getElementById('decodedVideoInfo');
+    const downloadVideoBtn = document.getElementById('downloadVideoBtn');
+    const clearDecodeBtn = document.getElementById('clearDecodeBtn');
+    const decodeProgress = document.getElementById('decodeProgress');
+    const decodeBar = document.getElementById('decodeBar');
+    const decodeProgressText = document.getElementById('decodeProgressText');
+    const decodeError = document.getElementById('decodeError');
+    const decodeSuccess = document.getElementById('decodeSuccess');
+
+    // Состояние
+    let currentVideoFile = null;
+    let currentVideoUrl = null;
+    let currentBase64 = null;
+    let decodedVideoBlob = null;
+    let decodedVideoUrl = null;
+
+    const MAX_SIZE = 50 * 1024 * 1024; // 50 MB
+
+    // === ПЕРЕКЛЮЧЕНИЕ РЕЖИМОВ ===
+    modes.forEach(btn => btn.addEventListener('click', () => {
+        modes.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const mode = btn.dataset.mode;
+        encodeModeDiv.style.display = mode === 'encode' ? 'block' : 'none';
+        decodeModeDiv.style.display = mode === 'decode' ? 'block' : 'none';
+    }));
+
+    // === ПОКАЗАТЬ/СКРЫТЬ ОШИБКИ ===
+    function hideAllMessages() {
+        encodeError.classList.remove('show');
+        encodeSuccess.classList.remove('show');
+        decodeError.classList.remove('show');
+        decodeSuccess.classList.remove('show');
+    }
+
+    // === ФОРМАТИРОВАНИЕ РАЗМЕРА ===
+    function formatSize(bytes) {
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + ' KB';
+        return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+    }
+
+    // === ЗАГРУЗКА ВИДЕО ===
+    function handleVideoFile(file) {
+        hideAllMessages();
+        
+        if (!file) return;
+        if (!file.type.startsWith('video/')) {
+            encodeError.textContent = 'Пожалуйста, выберите видео файл.';
+            encodeError.classList.add('show');
+            return;
+        }
+        if (file.size > MAX_SIZE) {
+            encodeError.textContent = `Файл слишком большой (${formatSize(file.size)}). Максимум 50 МБ.`;
+            encodeError.classList.add('show');
+            return;
+        }
+
+        currentVideoFile = file;
+        if (currentVideoUrl) URL.revokeObjectURL(currentVideoUrl);
+        currentVideoUrl = URL.createObjectURL(file);
+
+        videoPreview.innerHTML = `<video src="${currentVideoUrl}" controls></video>`;
+        videoInfo.textContent = `📹 ${file.name} · ${formatSize(file.size)} · ${file.type}`;
+        
+        encodeBtn.disabled = false;
+        base64Output.value = '';
+        copyBase64Btn.disabled = true;
+        downloadTxtBtn.disabled = true;
+        encodeSuccess.classList.remove('show');
+    }
+
+    videoInput.addEventListener('change', e => handleVideoFile(e.target.files[0]));
+
+    // Drag & Drop видео
+    videoDropzone.addEventListener('click', () => videoInput.click());
+    videoDropzone.addEventListener('dragover', e => { e.preventDefault(); videoDropzone.classList.add('dragover'); });
+    videoDropzone.addEventListener('dragleave', () => videoDropzone.classList.remove('dragover'));
+    videoDropzone.addEventListener('drop', e => {
+        e.preventDefault();
+        videoDropzone.classList.remove('dragover');
+        handleVideoFile(e.dataTransfer.files[0]);
+    });
+
+    // === КОДИРОВАНИЕ ВИДЕО ===
+    encodeBtn.addEventListener('click', () => {
+        if (!currentVideoFile) return;
+        
+        hideAllMessages();
+        encodeProgress.style.display = 'block';
+        encodeBar.style.width = '0%';
+        encodeProgressText.textContent = 'Чтение видео...';
+        encodeBtn.disabled = true;
+
+        const reader = new FileReader();
+        
+        reader.onprogress = e => {
+            if (e.lengthComputable) {
+                const percent = (e.loaded / e.total) * 100;
+                encodeBar.style.width = percent + '%';
+                encodeProgressText.textContent = `Чтение: ${Math.round(percent)}%`;
+            }
+        };
+
+        reader.onload = e => {
+            encodeProgressText.textContent = 'Готово!';
+            encodeBar.style.width = '100%';
+            
+            const base64 = e.target.result;
+            
+            currentBase64 = base64;
+            base64Output.value = base64;
+            
+            encodeProgress.style.display = 'none';
+            copyBase64Btn.disabled = false;
+            downloadTxtBtn.disabled = false;
+            encodeBtn.disabled = false;
+            
+            const base64Size = base64.length * 0.75;
+            encodeSuccess.textContent = `✅ Готово! Размер Base64: ${formatSize(base64Size)}`;
+            encodeSuccess.classList.add('show');
+        };
+
+        reader.onerror = () => {
+            encodeProgress.style.display = 'none';
+            encodeError.textContent = 'Ошибка чтения файла';
+            encodeError.classList.add('show');
+            encodeBtn.disabled = false;
+        };
+
+        reader.readAsDataURL(currentVideoFile);
+    });
+
+    // === СКАЧАТЬ TXT (ИСПРАВЛЕНО) ===
+    downloadTxtBtn.addEventListener('click', () => {
+        if (!currentBase64) {
+            encodeError.textContent = 'Сначала закодируйте видео.';
+            encodeError.classList.add('show');
+            return;
+        }
+        
+        try {
+            const blob = new Blob([currentBase64], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = (currentVideoFile?.name || 'video') + '.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            encodeSuccess.textContent = '✅ TXT файл сохранён!';
+            encodeSuccess.classList.add('show');
+        } catch (err) {
+            encodeError.textContent = 'Ошибка при скачивании: ' + err.message;
+            encodeError.classList.add('show');
+        }
+    });
+
+    // === КОПИРОВАТЬ BASE64 ===
+    copyBase64Btn.addEventListener('click', () => {
+        base64Output.select();
+        try {
+            document.execCommand('copy');
+            encodeSuccess.textContent = '✅ Base64 скопирован!';
+            encodeSuccess.classList.add('show');
+        } catch (err) {
+            navigator.clipboard?.writeText(base64Output.value).then(() => {
+                encodeSuccess.textContent = '✅ Base64 скопирован!';
+                encodeSuccess.classList.add('show');
+            }).catch(() => {
+                encodeError.textContent = 'Не удалось скопировать';
+                encodeError.classList.add('show');
+            });
+        }
+    });
+
+    // === ОЧИСТИТЬ КОДИРОВАНИЕ ===
+    clearEncodeBtn.addEventListener('click', () => {
+        currentVideoFile = null;
+        if (currentVideoUrl) URL.revokeObjectURL(currentVideoUrl);
+        currentVideoUrl = null;
+        currentBase64 = null;
+        videoPreview.innerHTML = '<div class="placeholder">Предпросмотр видео</div>';
+        videoInfo.textContent = '';
+        base64Output.value = '';
+        encodeBtn.disabled = true;
+        copyBase64Btn.disabled = true;
+        downloadTxtBtn.disabled = true;
+        videoInput.value = '';
+        hideAllMessages();
+    });
+
+    // === ЗАГРУЗКА TXT ФАЙЛА ===
+    function handleTxtFile(file) {
+        hideAllMessages();
+        
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = e => {
+            base64Input.value = e.target.result;
+            decodeSuccess.textContent = '✅ TXT файл загружен! Нажмите "Декодировать видео"';
+            decodeSuccess.classList.add('show');
+        };
+        reader.onerror = () => {
+            decodeError.textContent = 'Ошибка чтения TXT файла.';
+            decodeError.classList.add('show');
+        };
+        reader.readAsText(file);
+    }
+
+    txtInput.addEventListener('change', e => handleTxtFile(e.target.files[0]));
+
+    // Drag & Drop TXT
+    txtDropzone.addEventListener('click', () => txtInput.click());
+    txtDropzone.addEventListener('dragover', e => { e.preventDefault(); txtDropzone.classList.add('dragover'); });
+    txtDropzone.addEventListener('dragleave', () => txtDropzone.classList.remove('dragover'));
+    txtDropzone.addEventListener('drop', e => {
+        e.preventDefault();
+        txtDropzone.classList.remove('dragover');
+        handleTxtFile(e.dataTransfer.files[0]);
+    });
+
+    // === ДЕКОДИРОВАНИЕ ===
+    decodeBtn.addEventListener('click', () => {
+        const base64 = base64Input.value.trim();
+        hideAllMessages();
+        
+        if (!base64) {
+            decodeError.textContent = 'Вставьте Base64 или загрузите TXT файл.';
+            decodeError.classList.add('show');
+            return;
+        }
+
+        decodeProgress.style.display = 'block';
+        decodeBar.style.width = '30%';
+        decodeProgressText.textContent = 'Декодирование...';
+
+        setTimeout(() => {
+            try {
+                decodeBar.style.width = '60%';
+                
+                // Очищаем предыдущее
+                if (decodedVideoUrl) URL.revokeObjectURL(decodedVideoUrl);
+
+                // Конвертируем Base64 в Blob
+                const res = base64.split(',');
+                const base64Data = res.length > 1 ? res[1] : base64;
+                
+                // Определяем MIME тип
+                let mime = 'video/mp4';
+                if (base64.includes('data:video/webm')) mime = 'video/webm';
+                else if (base64.includes('data:video/quicktime')) mime = 'video/quicktime';
+                else if (base64.includes('data:video/x-msvideo')) mime = 'video/x-msvideo';
+                
+                decodeProgressText.textContent = 'Создание видео...';
+                decodeBar.style.width = '80%';
+                
+                // Декодируем base64
+                const binaryStr = atob(base64Data);
+                const bytes = new Uint8Array(binaryStr.length);
+                for (let i = 0; i < binaryStr.length; i++) {
+                    bytes[i] = binaryStr.charCodeAt(i);
+                }
+                
+                decodedVideoBlob = new Blob([bytes], { type: mime });
+                decodedVideoUrl = URL.createObjectURL(decodedVideoBlob);
+
+                decodedVideoPreview.innerHTML = `<video src="${decodedVideoUrl}" controls></video>`;
+                
+                const sizeMB = decodedVideoBlob.size / (1024 * 1024);
+                decodedVideoInfo.textContent = `✅ Восстановлено · ${sizeMB.toFixed(2)} MB`;
+                
+                downloadVideoBtn.disabled = false;
+                decodeProgress.style.display = 'none';
+                decodeSuccess.textContent = '✅ Видео успешно восстановлено!';
+                decodeSuccess.classList.add('show');
+                
+            } catch (err) {
+                decodeProgress.style.display = 'none';
+                decodeError.textContent = 'Ошибка декодирования: неверный Base64.';
+                decodeError.classList.add('show');
+                console.error(err);
+            }
+        }, 100);
+    });
+
+    // === СКАЧАТЬ ВОССТАНОВЛЕННОЕ ВИДЕО (ИСПРАВЛЕНО) ===
+    downloadVideoBtn.addEventListener('click', () => {
+        if (!decodedVideoBlob || !decodedVideoUrl) {
+            decodeError.textContent = 'Сначала декодируйте видео.';
+            decodeError.classList.add('show');
+            return;
+        }
+        
+        try {
+            const a = document.createElement('a');
+            a.href = decodedVideoUrl;
+            a.download = 'restored_video.mp4';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            
+            decodeSuccess.textContent = '✅ Видео сохранено!';
+            decodeSuccess.classList.add('show');
+        } catch (err) {
+            decodeError.textContent = 'Ошибка при скачивании: ' + err.message;
+            decodeError.classList.add('show');
+        }
+    });
+
+    // === ОЧИСТИТЬ ДЕКОДЕР ===
+    clearDecodeBtn.addEventListener('click', () => {
+        base64Input.value = '';
+        decodedVideoPreview.innerHTML = '<div class="placeholder">Здесь появится восстановленное видео</div>';
+        decodedVideoInfo.textContent = '';
+        downloadVideoBtn.disabled = true;
+        txtInput.value = '';
+        if (decodedVideoUrl) URL.revokeObjectURL(decodedVideoUrl);
+        decodedVideoUrl = null;
+        decodedVideoBlob = null;
+        hideAllMessages();
+    });
+
+})();
+</script>
+</body>
+</html>

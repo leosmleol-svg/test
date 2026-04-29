@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>LBS.SU | HASH GENERATOR</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <style>
+        :root { --bg: #0a0a0a; --card: #141414; --acc: #00ff88; --txt: #eee; --brd: #222; --item: #1c1c1c; --muted: #777; }
+        * { box-sizing: border-box; }
+        body { background: var(--bg); color: var(--txt); font-family: -apple-system, system-ui, monospace; margin: 0; padding: 15px; display: flex; justify-content: center; min-height: 100vh; }
+        .card { background: var(--card); border: 1px solid var(--brd); padding: 25px 20px; border-radius: 24px; width: 100%; max-width: 520px; box-shadow: 0 20px 40px rgba(0,0,0,0.4); align-self: flex-start; margin-top: 10px; }
+        .ai-banner { background: rgba(0,255,136,0.05); border: 1px dashed var(--acc); color: var(--acc); padding: 10px; border-radius: 14px; font-size: 11px; text-align: center; font-weight: 800; text-transform: uppercase; margin-bottom: 20px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .header h2 { margin: 0; font-size: 1.4rem; font-weight: 800; }
+        .back-link { color: var(--muted); text-decoration: none; font-size: 14px; border: 1px solid #333; padding: 5px 12px; border-radius: 30px; }
+        .section-title { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin: 15px 0 8px 0; }
+        textarea, input, select { width: 100%; background: var(--item); border: 1px solid var(--brd); border-radius: 16px; padding: 14px 16px; color: var(--txt); font-size: 14px; font-family: monospace; outline: none; resize: vertical; }
+        textarea { min-height: 100px; }
+        select { cursor: pointer; }
+        .hash-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        .hash-row label { min-width: 80px; font-size: 13px; font-weight: 600; color: var(--acc); }
+        .hash-row input { flex: 1; }
+        .copy-btn { background: transparent; border: 1px solid #333; color: var(--muted); padding: 4px 12px; border-radius: 20px; font-size: 10px; cursor: pointer; }
+        .compare-section { margin-top: 15px; padding: 15px; background: #0d0d0d; border-radius: 16px; }
+        .compare-input { display: flex; gap: 10px; }
+        .compare-status { margin-top: 10px; font-weight: 600; }
+        .status-match { color: var(--acc); }
+        .status-mismatch { color: #ff4444; }
+        .history { margin-top: 15px; }
+        .history-item { font-family: monospace; font-size: 11px; padding: 6px; border-bottom: 1px solid #222; color: var(--muted); }
+        .note { font-size: 10px; color: var(--muted); margin-top: 20px; text-align: center; border-top: 1px solid #222; padding-top: 15px; }
+    </style>
+</head>
+<body>
+<div class="card">
+    <div class="ai-banner">#️⃣ HASH GENERATOR · MD5 · SHA1 · SHA256 · SHA512</div>
+    <div class="header"><h2>#️⃣ HASH</h2><a href="/" class="back-link">← HUB</a></div>
+    
+    <div class="section-title">📥 ВВОД</div>
+    <textarea id="inputText" placeholder="Введите текст для хеширования...">Hello, LBS.SU!</textarea>
+    
+    <div class="section-title">⚙️ АЛГОРИТМ</div>
+    <select id="algorithm">
+        <option value="MD5">MD5</option>
+        <option value="SHA-1">SHA-1</option>
+        <option value="SHA-256" selected>SHA-256</option>
+        <option value="SHA-384">SHA-384</option>
+        <option value="SHA-512">SHA-512</option>
+    </select>
+
+    <div class="section-title">🔐 РЕЗУЛЬТАТЫ</div>
+    <div id="hashResults"></div>
+
+    <div class="compare-section">
+        <div class="section-title" style="margin-top:0;">🔍 СРАВНИТЬ ХЕШ</div>
+        <div class="compare-input">
+            <input type="text" id="compareHash" placeholder="Вставьте ожидаемый хеш...">
+            <button class="copy-btn" onclick="checkCompare()">Проверить</button>
+        </div>
+        <div class="compare-status" id="compareStatus"></div>
+    </div>
+
+    <div class="history">
+        <div class="section-title">📜 ИСТОРИЯ (последние 5)</div>
+        <div id="historyList"></div>
+    </div>
+
+    <div class="note">⚡ Все хеши сразу · Сравнение · История</div>
+</div>
+
+<script>
+    const inputText = document.getElementById('inputText');
+    const algorithm = document.getElementById('algorithm');
+    const hashResults = document.getElementById('hashResults');
+    const historyList = document.getElementById('historyList');
+    let history = [];
+
+    const algoMap = { 'MD5': CryptoJS.MD5, 'SHA-1': CryptoJS.SHA1, 'SHA-256': CryptoJS.SHA256, 'SHA-384': CryptoJS.SHA384, 'SHA-512': CryptoJS.SHA512 };
+
+    function generateAllHashes(text) {
+        if (!text) return {};
+        return {
+            MD5: CryptoJS.MD5(text).toString(),
+            SHA1: CryptoJS.SHA1(text).toString(),
+            SHA256: CryptoJS.SHA256(text).toString(),
+            SHA384: CryptoJS.SHA384(text).toString(),
+            SHA512: CryptoJS.SHA512(text).toString()
+        };
+    }
+
+    function renderHashes() {
+        const text = inputText.value;
+        if (!text) { hashResults.innerHTML = '<div style="color:var(--muted); padding:10px;">Введите текст...</div>'; return; }
+        const hashes = generateAllHashes(text);
+        const selectedAlgo = algorithm.value;
+        const selectedHash = hashes[selectedAlgo.replace('-', '')] || hashes[selectedAlgo] || '';
+        
+        addToHistory(selectedAlgo, selectedHash);
+        
+        hashResults.innerHTML = Object.entries(hashes).map(([name, val]) => {
+            const isSelected = name === selectedAlgo || name === selectedAlgo.replace('-', '');
+            return `<div class="hash-row" style="${isSelected ? 'border-left: 3px solid var(--acc); padding-left: 10px;' : ''}">
+                <label>${name}:</label>
+                <input type="text" value="${val}" readonly style="background:${isSelected ? '#1a2a1a' : 'var(--item)'};">
+                <button class="copy-btn" onclick="copyHash('${val}')">📋</button>
+            </div>`;
+        }).join('');
+    }
+
+    function addToHistory(algo, hash) {
+        history.unshift({ algo, hash: hash.slice(0, 32) + '...', time: new Date().toLocaleTimeString() });
+        if (history.length > 5) history.pop();
+        historyList.innerHTML = history.map(h => `<div class="history-item">[${h.time}] ${h.algo}: ${h.hash}</div>`).join('');
+    }
+
+    function copyHash(hash) { navigator.clipboard?.writeText(hash); }
+
+    function checkCompare() {
+        const expected = document.getElementById('compareHash').value.trim().toLowerCase();
+        const text = inputText.value;
+        const selectedAlgo = algorithm.value;
+        const actual = algoMap[selectedAlgo](text).toString().toLowerCase();
+        const status = document.getElementById('compareStatus');
+        if (!expected) { status.innerHTML = ''; return; }
+        if (expected === actual) { status.innerHTML = '<span class="status-match">✅ ХЕШИ СОВПАДАЮТ</span>'; }
+        else { status.innerHTML = '<span class="status-mismatch">❌ ХЕШИ НЕ СОВПАДАЮТ</span>'; }
+    }
+
+    inputText.addEventListener('input', () => { renderHashes(); checkCompare(); });
+    algorithm.addEventListener('change', renderHashes);
+    document.getElementById('compareHash').addEventListener('input', checkCompare);
+    renderHashes();
+</script>
+</body>
+</html>
