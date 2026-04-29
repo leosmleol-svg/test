@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LBS.SU - Global Terminal</title>
+    <style>
+        :root { 
+            --bg: #0d1117; 
+            --panel: #161b22; 
+            --border: #30363d; 
+            --accent: #58a6ff; 
+            --text: #c9d1d9; 
+            --green: #7ee787; 
+            --yellow: #d29922;
+            --red: #f85149;
+        }
+
+        body { 
+            font-family: 'Consolas', 'Monaco', monospace; 
+            background: var(--bg); color: var(--text); 
+            margin: 0; display: flex; justify-content: center; 
+            align-items: center; height: 100vh; overflow: hidden;
+        }
+
+        .ide-card { 
+            width: 500px; background: var(--panel); 
+            border: 1px solid var(--border); border-radius: 8px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: flex; flex-direction: column;
+        }
+
+        header { 
+            background: #21262d; padding: 12px 15px; 
+            border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; 
+        }
+
+        .dot { width: 12px; height: 12px; border-radius: 50%; }
+        .dot.red { background: var(--red); }
+        .dot.yellow { background: var(--yellow); }
+        .dot.green { background: var(--green); }
+
+        .content { padding: 20px 25px; flex-grow: 1; display: flex; flex-direction: column; }
+
+        h1 { font-size: 18px; color: var(--accent); margin: 0 0 5px 0; letter-spacing: 1px; }
+        .subtitle { font-size: 11px; color: #8b949e; margin-bottom: 15px; }
+
+        #messages {
+            height: 250px; background: var(--bg); border: 1px solid var(--border);
+            border-radius: 6px; padding: 10px; overflow-y: auto;
+            display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; font-size: 13px;
+        }
+
+        .msg-line { line-height: 1.4; word-wrap: break-word; border-bottom: 1px dashed #21262d; padding-bottom: 5px;}
+        .msg-prefix { color: var(--green); margin-right: 8px; }
+        .msg-time { color: #8b949e; font-size: 10px; margin-right: 8px; }
+        
+        /* Стили для прикрепленных картинок */
+        .chat-image { max-width: 100%; max-height: 150px; border-radius: 4px; margin-top: 5px; border: 1px solid var(--border); display: block; }
+
+        .input-area { 
+            display: flex; align-items: center; background: var(--bg);
+            border: 1px solid var(--border); border-radius: 6px; padding: 5px 10px; gap: 5px;
+        }
+
+        .prompt-symbol { color: var(--accent); font-weight: bold; }
+        input[type="text"] { flex: 1; background: transparent; border: none; color: var(--text); font-family: inherit; font-size: 13px; outline: none; }
+        
+        button { 
+            background: transparent; color: var(--accent); border: 1px solid var(--accent);
+            border-radius: 4px; padding: 4px 8px; font-family: inherit; font-size: 12px; cursor: pointer; transition: 0.2s;
+        }
+        button:hover { background: rgba(88,166,255,0.1); }
+
+        .footer-status { 
+            background: #21262d; padding: 8px 15px; font-size: 11px; 
+            border-top: 1px solid var(--border); color: #8b949e; display: flex; justify-content: space-between; 
+        }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+    </style>
+</head>
+<body>
+
+<div class="ide-card">
+    <header>
+        <div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div>
+        <span style="margin-left: 10px; font-size: 12px; color: #8b949e;">sys_chat.sh</span>
+    </header>
+
+    <div class="content">
+        <h1>LBS.SU // TERMINAL</h1>
+        <div class="subtitle">Secure P2P Channel (Image up to 1MB)</div>
+        
+        <div id="messages"></div>
+
+        <div class="input-area">
+            <span class="prompt-symbol">~$</span>
+            <input type="text" id="text" placeholder="Введите пакет данных..." autocomplete="off">
+            
+            <input type="file" id="file-input" accept="image/*" style="display: none;">
+            
+            <button id="attach-btn" title="Прикрепить картинку">[📎]</button>
+            <button id="send-btn">[TX]</button>
+        </div>
+    </div>
+
+    <div class="footer-status">
+        <span id="status-text">● Status: Connecting to relay...</span>
+        <span id="file-status">UTF-8</span>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
+<script>
+    // Используем массив из нескольких публичных серверов для надежности
+    const peers = [
+        'https://gun-vue.js.org/gun',
+        'https://relay.peer.ooo/gun'
+    ];
+    
+    const gun = Gun({ peers: peers });
+    const chat = gun.get('lbs-su-secure-terminal-v2');
+
+    const input = document.getElementById('text');
+    const sendBtn = document.getElementById('send-btn');
+    const attachBtn = document.getElementById('attach-btn');
+    const fileInput = document.getElementById('file-input');
+    const messagesList = document.getElementById('messages');
+    const statusText = document.getElementById('status-text');
+    const fileStatus = document.getElementById('file-status');
+
+    let currentFileBase64 = null;
+
+    // Статус сети
+    let isConnected = false;
+    setInterval(() => {
+        const peersConnected = Object.keys(gun._.opt.peers).length;
+        if (peersConnected > 0 && !isConnected) {
+            statusText.innerText = '● Status: ONLINE (P2P)';
+            statusText.style.color = 'var(--green)';
+            isConnected = true;
+        }
+    }, 1000);
+
+    function getTime() {
+        const now = new Date();
+        return now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+    }
+
+    // Обработка клика на скрепку
+    attachBtn.onclick = () => fileInput.click();
+
+    // Чтение файла при выборе
+    fileInput.onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        // Ограничение размера (~1.5 MB)
+        if (file.size > 1500000) {
+            alert('Файл слишком большой! Для P2P чата используйте картинки до 1.5 МБ.');
+            fileInput.value = '';
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            currentFileBase64 = event.target.result;
+            fileStatus.innerText = '📎 ' + file.name;
+            fileStatus.style.color = 'var(--yellow)';
+        };
+        reader.readAsDataURL(file);
+    };
+
+    // Отправка данных
+    sendBtn.onclick = () => {
+        const textVal = input.value.trim();
+        if (!textVal && !currentFileBase64) return; // Не отправляем пустоту
+
+        chat.set({ 
+            msg: textVal, 
+            image: currentFileBase64, // Отправляем строку картинки, если она есть
+            time: getTime(),
+            timestamp: Date.now()
+        });
+
+        // Очистка полей после отправки
+        input.value = '';
+        currentFileBase64 = null;
+        fileInput.value = '';
+        fileStatus.innerText = 'UTF-8';
+        fileStatus.style.color = '#8b949e';
+    };
+
+    input.onkeydown = (e) => { if(e.key === 'Enter') sendBtn.onclick(); };
+
+    // Уникальный трекер сообщений, чтобы не дублировать
+    const renderedMessages = new Set();
+
+    // Отрисовка входящих данных
+    chat.map().once((data, id) => {
+        if (!data || renderedMessages.has(id)) return;
+        if (!data.msg && !data.image) return;
+        
+        renderedMessages.add(id);
+        const div = document.createElement('div');
+        div.className = 'msg-line';
+        
+        let contentHTML = `
+            <span class="msg-time">[${data.time || '--:--'}]</span>
+            <span class="msg-prefix">[RECV]</span>
+            <span style="color: var(--text);">${data.msg || ''}</span>
+        `;
+
+        // Если пришла картинка, добавляем тег img
+        if (data.image) {
+            contentHTML += `<img src="${data.image}" class="chat-image" alt="attached image">`;
+        }
+        
+        div.innerHTML = contentHTML;
+        messagesList.appendChild(div);
+        messagesList.scrollTop = messagesList.scrollHeight;
+    });
+</script>
+
+</body>
+</html>

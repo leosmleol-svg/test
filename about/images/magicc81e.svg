@@ -1,0 +1,37 @@
+<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 10 10">
+	<svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+		<path class="ld" style="animation-delay: -0.5s;" d="M3.5 2.5C3.61882 4.38159 5.1184 5.88118 7 6C5.1184 6.11882 3.61882 7.6184 3.5 9.5C3.38118 7.6184 1.88159 6.11882 0 6C1.88159 5.88118 3.38118 4.38159 3.5 2.5Z" fill="#F1B7FF"/>
+		<path class="ld" d="M8 0.5C8.0679 1.57519 8.9248 2.43211 10 2.5C8.9248 2.5679 8.0679 3.4248 8 4.5C7.93211 3.4248 7.07519 2.5679 6 2.5C7.07519 2.43211 7.93211 1.57519 8 0.5Z" fill="#F1B7FF"/>
+	</svg>
+
+	<style type="text/css">
+		@keyframes ld-fade {
+			0% {
+				opacity: 1;
+			}
+			50% {
+				opacity: 0;
+			}
+			100% {
+				opacity: 1;
+			}
+		}
+
+		@-webkit-keyframes ld-fade {
+			0% {
+				opacity: 1;
+			}
+			50% {
+				opacity: 0;
+			}
+			100% {
+				opacity: 1;
+			}
+		}
+
+		.ld {
+			-webkit-animation: ld-fade 2s infinite;
+					animation: ld-fade 2s infinite;
+		}
+	</style>
+</svg>

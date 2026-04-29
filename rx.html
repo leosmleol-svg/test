@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>LBS.SU | REGEX TESTER</title>
+    <style>
+        :root { --bg: #0a0a0a; --card: #141414; --acc: #00ff88; --txt: #eee; --brd: #222; --item: #1c1c1c; --muted: #777; --warn: #ffaa00; --danger: #ff4444; }
+        * { box-sizing: border-box; }
+        body { background: var(--bg); color: var(--txt); font-family: -apple-system, system-ui, monospace; margin: 0; padding: 15px; display: flex; justify-content: center; min-height: 100vh; }
+        .card { background: var(--card); border: 1px solid var(--brd); padding: 25px 20px; border-radius: 24px; width: 100%; max-width: 560px; box-shadow: 0 20px 40px rgba(0,0,0,0.4); align-self: flex-start; margin-top: 10px; }
+        .ai-banner { background: rgba(0,255,136,0.05); border: 1px dashed var(--acc); color: var(--acc); padding: 10px; border-radius: 14px; font-size: 11px; text-align: center; font-weight: 800; text-transform: uppercase; margin-bottom: 20px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .header h2 { margin: 0; font-size: 1.4rem; font-weight: 800; }
+        .back-link { color: var(--muted); text-decoration: none; font-size: 14px; border: 1px solid #333; padding: 5px 12px; border-radius: 30px; }
+        .section-title { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin: 15px 0 8px 0; }
+        input, textarea { width: 100%; background: var(--item); border: 1px solid var(--brd); border-radius: 16px; padding: 14px 16px; color: var(--txt); font-size: 14px; font-family: 'SF Mono', monospace; outline: none; resize: vertical; }
+        input:focus, textarea:focus { border-color: var(--acc); }
+        textarea { min-height: 120px; }
+        .regex-row { display: flex; gap: 10px; align-items: center; }
+        .regex-row input { flex: 1; }
+        .flags { display: flex; gap: 8px; margin-top: 10px; }
+        .flag { padding: 6px 12px; background: var(--item); border: 1px solid var(--brd); border-radius: 20px; font-size: 12px; cursor: pointer; }
+        .flag.active { background: var(--acc); color: #0a0a0a; border-color: var(--acc); }
+        .match-highlight { background: #0d0d0d; border: 1px solid var(--brd); border-radius: 16px; padding: 16px; font-family: monospace; font-size: 14px; white-space: pre-wrap; word-break: break-all; max-height: 200px; overflow-y: auto; }
+        .match-highlight mark { background: rgba(0,255,136,0.3); color: var(--txt); padding: 2px 0; border-radius: 4px; }
+        .groups-list { margin-top: 10px; }
+        .group-item { display: flex; justify-content: space-between; padding: 8px 12px; background: var(--item); border-radius: 10px; margin-bottom: 5px; }
+        .cheatsheet { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+        .cheat-btn { background: var(--item); border: 1px solid var(--brd); padding: 6px 12px; border-radius: 20px; font-size: 11px; cursor: pointer; }
+        .cheat-btn:hover { border-color: var(--acc); }
+        .stats { font-size: 11px; color: var(--muted); margin-top: 5px; }
+        .copy-btn { background: transparent; border: 1px solid #333; color: var(--muted); padding: 4px 12px; border-radius: 20px; font-size: 10px; cursor: pointer; }
+        .note { font-size: 10px; color: var(--muted); margin-top: 20px; text-align: center; border-top: 1px solid #222; padding-top: 15px; }
+    </style>
+</head>
+<body>
+<div class="card">
+    <div class="ai-banner">🔍 REGEX PLAYGROUND · ТЕСТИРУЙ РЕГУЛЯРКИ НА ЛЕТУ</div>
+    <div class="header"><h2>.* RX</h2><a href="/" class="back-link">← HUB</a></div>
+    
+    <div class="section-title">🔧 ПАТТЕРН</div>
+    <div class="regex-row">
+        <input type="text" id="patternInput" placeholder="/regex/" value="\\b[\\w.-]+@[\\w.-]+\\.\\w{2,}\\b">
+    </div>
+    <div class="flags">
+        <span class="flag active" data-flag="g">g (global)</span>
+        <span class="flag active" data-flag="i">i (ignore case)</span>
+        <span class="flag" data-flag="m">m (multiline)</span>
+        <span class="flag" data-flag="s">s (dotall)</span>
+        <span class="flag" data-flag="u">u (unicode)</span>
+    </div>
+
+    <div class="section-title">📝 ШПАРГАЛКА</div>
+    <div class="cheatsheet">
+        <span class="cheat-btn" onclick="insertPattern('\\d+')">\\d+ (цифры)</span>
+        <span class="cheat-btn" onclick="insertPattern('\\w+')">\\w+ (буквы)</span>
+        <span class="cheat-btn" onclick="insertPattern('[a-zA-Z]+')">[a-zA-Z]+</span>
+        <span class="cheat-btn" onclick="insertPattern('\\b[\\w.-]+@[\\w.-]+\\.\\w+\\b')">Email</span>
+        <span class="cheat-btn" onclick="insertPattern('\\+?\\d{1,3}[-.\\s]?\\(?\\d{1,4}\\)?[-.\\s]?\\d{1,4}[-.\\s]?\\d{1,9}')">Телефон</span>
+        <span class="cheat-btn" onclick="insertPattern('\\b(?:\\d{1,3}\\.){3}\\d{1,3}\\b')">IP</span>
+        <span class="cheat-btn" onclick="insertPattern('https?://[^\\s]+')">URL</span>
+    </div>
+
+    <div class="section-title">📄 ТЕСТОВЫЙ ТЕКСТ</div>
+    <textarea id="testText">Свяжитесь со мной: test@example.com или admin@site.ru\nМой IP: 192.168.1.1\nТелефон: +7 (999) 123-45-67\nhttps://lbs.su</textarea>
+
+    <div class="section-title">✨ РЕЗУЛЬТАТ <span class="stats" id="matchStats"></span></div>
+    <div class="match-highlight" id="highlightedText"></div>
+
+    <div class="section-title">📋 ГРУППЫ ЗАХВАТА</div>
+    <div class="groups-list" id="groupsList"></div>
+
+    <div class="note">⚡ Подсветка в реальном времени · Шпаргалка · Группы захвата</div>
+</div>
+
+<script>
+    const patternInput = document.getElementById('patternInput');
+    const testText = document.getElementById('testText');
+    const highlightedText = document.getElementById('highlightedText');
+    const groupsList = document.getElementById('groupsList');
+    const matchStats = document.getElementById('matchStats');
+    const flags = document.querySelectorAll('.flag');
+
+    let activeFlags = { g: true, i: true, m: false, s: false, u: false };
+
+    flags.forEach(f => { f.addEventListener('click', () => { f.classList.toggle('active'); activeFlags[f.dataset.flag] = f.classList.contains('active'); runRegex(); }); });
+
+    function insertPattern(p) { patternInput.value = p; runRegex(); }
+
+    function getFlags() { return Object.entries(activeFlags).filter(([_,v]) => v).map(([k]) => k).join(''); }
+
+    function runRegex() {
+        const pattern = patternInput.value;
+        const text = testText.value;
+        if (!pattern) { highlightedText.textContent = text; matchStats.textContent = ''; groupsList.innerHTML = ''; return; }
+        
+        try {
+            const regex = new RegExp(pattern, getFlags());
+            const matches = [...text.matchAll(regex)];
+            
+            let lastIndex = 0, resultHtml = '';
+            matches.forEach(m => {
+                resultHtml += escapeHtml(text.slice(lastIndex, m.index));
+                resultHtml += `<mark>${escapeHtml(m[0])}</mark>`;
+                lastIndex = m.index + m[0].length;
+            });
+            resultHtml += escapeHtml(text.slice(lastIndex));
+            highlightedText.innerHTML = resultHtml;
+            matchStats.textContent = `Найдено: ${matches.length}`;
+            
+            if (matches.length > 0 && matches[0].length > 1) {
+                groupsList.innerHTML = matches.slice(0, 5).map((m, i) => 
+                    `<div class="group-item"><span>Совпадение ${i+1}:</span><span>${m.slice(1).map(g => escapeHtml(g || '(пусто)')).join(', ')}</span></div>`
+                ).join('');
+            } else { groupsList.innerHTML = '<div class="group-item"><span>Нет групп захвата</span><span>—</span></div>'; }
+        } catch (e) { highlightedText.textContent = text; matchStats.textContent = 'Ошибка regex'; groupsList.innerHTML = ''; }
+    }
+
+    function escapeHtml(t) { return String(t).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+
+    patternInput.addEventListener('input', runRegex);
+    testText.addEventListener('input', runRegex);
+    runRegex();
+</script>
+</body>
+</html>

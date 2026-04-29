@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>LBS.SU | JWT INSPECTOR</title>
+    <style>
+        :root {
+            --bg: #0a0a0a;
+            --card: #141414;
+            --acc: #00ff88;
+            --txt: #eee;
+            --brd: #222;
+            --item: #1c1c1c;
+            --muted: #777;
+            --warn: #ffaa00;
+            --danger: #ff4444;
+            --success: #00ff88;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            background: var(--bg);
+            color: var(--txt);
+            font-family: -apple-system, system-ui, monospace;
+            margin: 0;
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--brd);
+            padding: 25px 20px;
+            border-radius: 24px;
+            width: 100%;
+            max-width: 520px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            align-self: flex-start;
+            margin-top: 10px;
+        }
+
+        .ai-banner {
+            background: rgba(0, 255, 136, 0.05);
+            border: 1px dashed var(--acc);
+            color: var(--acc);
+            padding: 10px;
+            border-radius: 14px;
+            font-size: 11px;
+            text-align: center;
+            font-weight: 800;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .header h2 { margin: 0; font-size: 1.4rem; font-weight: 800; }
+        .back-link {
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 14px;
+            border: 1px solid #333;
+            padding: 5px 12px;
+            border-radius: 30px;
+            transition: 0.2s;
+        }
+        .back-link:hover { border-color: var(--acc); color: var(--acc); }
+
+        .section-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--muted);
+            margin: 20px 0 8px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        textarea {
+            width: 100%;
+            background: var(--item);
+            border: 1px solid var(--brd);
+            border-radius: 16px;
+            padding: 14px 16px;
+            color: var(--txt);
+            font-size: 13px;
+            font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace;
+            resize: vertical;
+            outline: none;
+            transition: 0.2s;
+            min-height: 100px;
+        }
+        textarea:focus { border-color: var(--acc); box-shadow: 0 0 0 2px rgba(0,255,136,0.1); }
+
+        .example-btn {
+            background: transparent;
+            border: 1px solid #333;
+            color: var(--muted);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 10px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .example-btn:hover { border-color: var(--acc); color: var(--acc); }
+
+        /* Секции JWT */
+        .jwt-parts {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        .part-tab {
+            flex: 1;
+            text-align: center;
+            padding: 8px;
+            background: var(--item);
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--muted);
+            cursor: pointer;
+            border: 1px solid var(--brd);
+            transition: 0.2s;
+        }
+        .part-tab.active {
+            background: var(--acc);
+            color: #0a0a0a;
+            border-color: var(--acc);
+        }
+
+        .json-viewer {
+            background: #0d0d0d;
+            border: 1px solid var(--brd);
+            border-radius: 16px;
+            padding: 16px;
+            font-family: 'SF Mono', 'Monaco', monospace;
+            font-size: 12px;
+            overflow-x: auto;
+            max-height: 250px;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            margin-top: 10px;
+        }
+        .status-valid { background: rgba(0,255,136,0.15); color: var(--success); border: 1px solid rgba(0,255,136,0.3); }
+        .status-expired { background: rgba(255,68,68,0.15); color: var(--danger); border: 1px solid rgba(255,68,68,0.3); }
+        .status-warning { background: rgba(255,170,0,0.15); color: var(--warn); border: 1px solid rgba(255,170,0,0.3); }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #222;
+            font-size: 13px;
+        }
+        .info-label { color: var(--muted); }
+        .info-value { font-weight: 600; }
+
+        .copy-btn {
+            background: transparent;
+            border: 1px solid #333;
+            color: var(--muted);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 10px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .copy-btn:hover { border-color: var(--acc); color: var(--acc); }
+
+        .note {
+            font-size: 10px;
+            color: var(--muted);
+            margin-top: 20px;
+            text-align: center;
+            border-top: 1px solid #222;
+            padding-top: 15px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div class="ai-banner">🎫 JWT INSPECTOR · ПАРСИНГ ТОКЕНОВ НА ЛЕТУ</div>
+
+    <div class="header">
+        <h2>🎫 JWT</h2>
+        <a href="/" class="back-link">← HUB</a>
+    </div>
+
+    <!-- Поле ввода токена -->
+    <div class="section-title">
+        <span>🔑 ТОКЕН</span>
+        <button class="example-btn" id="exampleBtn">📋 ПРИМЕР</button>
+    </div>
+    <textarea id="tokenInput" placeholder="Вставьте JWT токен...">eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjE5MTYyMzkwMjJ9.4AdCj3zLZ0h0BVwX0m6X5X0W0QFcZ0yXaX2Z2Z2Z2Z2</textarea>
+
+    <!-- Переключатель частей токена -->
+    <div class="jwt-parts">
+        <div class="part-tab active" data-part="header">HEADER</div>
+        <div class="part-tab" data-part="payload">PAYLOAD</div>
+        <div class="part-tab" data-part="signature">SIGNATURE</div>
+    </div>
+
+    <!-- JSON просмотрщик -->
+    <div class="section-title">
+        <span id="partLabel">📄 HEADER</span>
+        <button class="copy-btn" id="copyPartBtn">📋 КОПИРОВАТЬ</button>
+    </div>
+    <div class="json-viewer" id="jsonViewer">{ }</div>
+
+    <!-- Статус и информация -->
+    <div id="statusContainer"></div>
+
+    <div class="info-row">
+        <span class="info-label">Алгоритм:</span>
+        <span class="info-value" id="algValue">—</span>
+    </div>
+    <div class="info-row">
+        <span class="info-label">Тип токена:</span>
+        <span class="info-value" id="typValue">—</span>
+    </div>
+    <div class="info-row">
+        <span class="info-label">Выпущен (iat):</span>
+        <span class="info-value" id="iatValue">—</span>
+    </div>
+    <div class="info-row">
+        <span class="info-label">Истекает (exp):</span>
+        <span class="info-value" id="expValue">—</span>
+    </div>
+
+    <div class="note">
+        ⚡ Всё на клиенте. Токен не отправляется на сервер.<br>
+        <span style="color: var(--acc);">✓ JWT Inspector v1.0</span>
+    </div>
+</div>
+
+<script>
+    (function(){
+        const tokenInput = document.getElementById('tokenInput');
+        const jsonViewer = document.getElementById('jsonViewer');
+        const partLabel = document.getElementById('partLabel');
+        const algValue = document.getElementById('algValue');
+        const typValue = document.getElementById('typValue');
+        const iatValue = document.getElementById('iatValue');
+        const expValue = document.getElementById('expValue');
+        const statusContainer = document.getElementById('statusContainer');
+        const partTabs = document.querySelectorAll('.part-tab');
+        const copyPartBtn = document.getElementById('copyPartBtn');
+        const exampleBtn = document.getElementById('exampleBtn');
+
+        let currentPart = 'header';
+        let decodedHeader = {};
+        let decodedPayload = {};
+        let signature = '';
+
+        // Демо-токен (действительный до 2030 года)
+        const DEMO_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjE4OTM0NTYwMDB9.8HxqX0zLZ0h0BVwX0m6X5X0W0QFcZ0yXaX2Z2Z2Z2Z2';
+
+        // Функция безопасного base64 декодирования
+        function base64UrlDecode(str) {
+            try {
+                str = str.replace(/-/g, '+').replace(/_/g, '/');
+                const pad = str.length % 4;
+                if (pad) str += '='.repeat(4 - pad);
+                return decodeURIComponent(escape(atob(str)));
+            } catch (e) {
+                return null;
+            }
+        }
+
+        // Форматирование JSON
+        function formatJSON(obj) {
+            if (!obj || Object.keys(obj).length === 0) return '{ }';
+            try {
+                return JSON.stringify(obj, null, 2);
+            } catch (e) {
+                return '{ "error": "Invalid JSON" }';
+            }
+        }
+
+        // Форматирование даты из timestamp
+        function formatDate(ts) {
+            if (!ts) return '—';
+            const date = new Date(ts * 1000);
+            return date.toLocaleString('ru-RU', { 
+                day: '2-digit', month: '2-digit', year: 'numeric',
+                hour: '2-digit', minute: '2-digit'
+            });
+        }
+
+        // Форматирование оставшегося времени
+        function formatTimeLeft(exp) {
+            if (!exp) return '';
+            const now = Math.floor(Date.now() / 1000);
+            const diff = exp - now;
+            
+            if (diff <= 0) {
+                const days = Math.floor(Math.abs(diff) / 86400);
+                return `⛔ ПРОСРОЧЕН ${days > 0 ? days + ' дн. назад' : 'сегодня'}`;
+            }
+            
+            const days = Math.floor(diff / 86400);
+            const hours = Math.floor((diff % 86400) / 3600);
+            const minutes = Math.floor((diff % 3600) / 60);
+            
+            if (days > 30) return `✅ Действует ещё ${Math.floor(days/30)} мес.`;
+            if (days > 0) return `✅ ${days} дн. ${hours} ч.`;
+            if (hours > 0) return `⚠️ ${hours} ч. ${minutes} мин.`;
+            return `🔥 Меньше часа!`;
+        }
+
+        // Обновление статуса
+        function updateStatus(exp, alg) {
+            if (!exp) {
+                statusContainer.innerHTML = '';
+                return;
+            }
+            
+            const now = Math.floor(Date.now() / 1000);
+            const diff = exp - now;
+            
+            let statusClass = 'status-valid';
+            let statusText = '🟢 ТОКЕН ДЕЙСТВИТЕЛЕН';
+            
+            if (diff <= 0) {
+                statusClass = 'status-expired';
+                statusText = '🔴 ТОКЕН ПРОСРОЧЕН';
+            } else if (diff < 86400) {
+                statusClass = 'status-warning';
+                statusText = '🟡 ИСТЕКАЕТ МЕНЕЕ ЧЕМ ЧЕРЕЗ СУТКИ';
+            }
+            
+            // Проверка на небезопасный алгоритм
+            let warningHtml = '';
+            if (alg === 'none') {
+                warningHtml = '<br><span style="color: var(--danger);">⚠️ Алгоритм "none" — токен не подписан!</span>';
+            } else if (alg === 'HS256' && decodedHeader.alg === 'HS256') {
+                // Просто информационное сообщение
+            }
+            
+            statusContainer.innerHTML = `
+                <div class="status-badge ${statusClass}">
+                    ${statusText} · ${formatTimeLeft(exp)}
+                </div>
+                ${warningHtml}
+            `;
+        }
+
+        // Парсинг токена
+        function parseToken(token) {
+            const parts = token.split('.');
+            
+            if (parts.length !== 3) {
+                jsonViewer.textContent = '{ "error": "Неверный формат JWT. Должно быть 3 части через точку." }';
+                algValue.textContent = '—';
+                typValue.textContent = '—';
+                iatValue.textContent = '—';
+                expValue.textContent = '—';
+                statusContainer.innerHTML = '';
+                decodedHeader = {};
+                decodedPayload = {};
+                signature = '';
+                return;
+            }
+            
+            // Декодируем header
+            const headerStr = base64UrlDecode(parts[0]);
+            try {
+                decodedHeader = JSON.parse(headerStr) || {};
+            } catch (e) {
+                decodedHeader = { error: 'Invalid JSON in header' };
+            }
+            
+            // Декодируем payload
+            const payloadStr = base64UrlDecode(parts[1]);
+            try {
+                decodedPayload = JSON.parse(payloadStr) || {};
+            } catch (e) {
+                decodedPayload = { error: 'Invalid JSON in payload' };
+            }
+            
+            signature = parts[2];
+            
+            // Обновляем UI
+            updateCurrentPartView();
+            
+            // Обновляем информационные поля
+            algValue.textContent = decodedHeader.alg || '—';
+            typValue.textContent = decodedHeader.typ || 'JWT';
+            
+            const iat = decodedPayload.iat;
+            const exp = decodedPayload.exp;
+            
+            iatValue.textContent = iat ? formatDate(iat) : '—';
+            expValue.textContent = exp ? formatDate(exp) : '—';
+            
+            // Обновляем статус
+            updateStatus(exp, decodedHeader.alg);
+            
+            // Проверка на небезопасные алгоритмы
+            if (decodedHeader.alg === 'none') {
+                const warningDiv = document.createElement('div');
+                warningDiv.style.marginTop = '10px';
+            }
+        }
+
+        // Отображение текущей выбранной части
+        function updateCurrentPartView() {
+            let data;
+            let label;
+            
+            switch (currentPart) {
+                case 'header':
+                    data = decodedHeader;
+                    label = '📄 HEADER (Алгоритм и тип)';
+                    break;
+                case 'payload':
+                    data = decodedPayload;
+                    label = '📦 PAYLOAD (Данные токена)';
+                    break;
+                case 'signature':
+                    data = { signature: signature, note: 'Подпись в формате Base64Url' };
+                    label = '🔏 SIGNATURE (Подпись)';
+                    break;
+            }
+            
+            partLabel.textContent = label;
+            jsonViewer.textContent = formatJSON(data);
+        }
+
+        // Обработка ввода токена
+        function handleTokenInput() {
+            const token = tokenInput.value.trim();
+            if (token) {
+                parseToken(token);
+            } else {
+                jsonViewer.textContent = '{ }';
+                algValue.textContent = '—';
+                typValue.textContent = '—';
+                iatValue.textContent = '—';
+                expValue.textContent = '—';
+                statusContainer.innerHTML = '';
+            }
+        }
+
+        // Переключение вкладок
+        partTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                partTabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                currentPart = tab.dataset.part;
+                updateCurrentPartView();
+            });
+        });
+
+        // Копирование текущей части
+        copyPartBtn.addEventListener('click', () => {
+            const text = jsonViewer.textContent;
+            navigator.clipboard?.writeText(text).catch(() => {
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+            });
+            copyPartBtn.textContent = '✅ СКОПИРОВАНО';
+            setTimeout(() => {
+                copyPartBtn.textContent = '📋 КОПИРОВАТЬ';
+            }, 1500);
+        });
+
+        // Кнопка примера
+        exampleBtn.addEventListener('click', () => {
+            tokenInput.value = DEMO_TOKEN;
+            handleTokenInput();
+        });
+
+        // Обработчик ввода
+        tokenInput.addEventListener('input', handleTokenInput);
+
+        // Инициализация с демо-токеном
+        handleTokenInput();
+    })();
+</script>
+</body>
+</html>

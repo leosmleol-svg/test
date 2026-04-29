@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>LBS.SU | YOUTUBE DOWNLOADER</title>
+    <style>
+        :root { --bg: #0a0a0a; --card: #141414; --acc: #00ff88; --txt: #eee; --brd: #222; --item: #1c1c1c; --muted: #777; --danger: #ff4444; --warn: #ffaa00; }
+        * { box-sizing: border-box; }
+        body { background: var(--bg); color: var(--txt); font-family: -apple-system, system-ui, sans-serif; margin: 0; padding: 15px; display: flex; justify-content: center; min-height: 100vh; }
+        .card { background: var(--card); border: 1px solid var(--brd); padding: 25px 20px; border-radius: 24px; width: 100%; max-width: 560px; box-shadow: 0 20px 40px rgba(0,0,0,0.4); align-self: flex-start; margin-top: 10px; }
+        .ai-banner { background: rgba(0,255,136,0.05); border: 1px dashed var(--acc); color: var(--acc); padding: 10px; border-radius: 14px; font-size: 11px; text-align: center; font-weight: 800; text-transform: uppercase; margin-bottom: 20px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .header h2 { margin: 0; font-size: 1.4rem; font-weight: 800; }
+        .back-link { color: var(--muted); text-decoration: none; font-size: 14px; border: 1px solid #333; padding: 5px 12px; border-radius: 30px; transition: 0.2s; }
+        .back-link:hover { border-color: var(--acc); color: var(--acc); }
+        .section-title { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin: 15px 0 8px 0; display: flex; justify-content: space-between; align-items: center; }
+        input { width: 100%; background: var(--item); border: 1px solid var(--brd); border-radius: 16px; padding: 14px 16px; color: var(--txt); font-size: 14px; outline: none; font-family: monospace; }
+        input:focus { border-color: var(--acc); }
+        .btn { background: var(--item); border: 1px solid var(--brd); color: var(--txt); padding: 12px 18px; border-radius: 40px; font-weight: 600; font-size: 14px; cursor: pointer; width: 100%; margin-top: 15px; transition: 0.2s; text-align: center; }
+        .btn-primary { background: var(--acc); border-color: var(--acc); color: #0a0a0a; }
+        .btn-primary:hover { opacity: 0.9; box-shadow: 0 0 12px rgba(0,255,136,0.3); }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-small { padding: 8px 12px; font-size: 12px; width: auto; }
+        .video-info { margin-top: 20px; padding: 15px; background: #0d0d0d; border-radius: 16px; display: none; }
+        .video-info.show { display: block; }
+        .video-info img { width: 100%; border-radius: 12px; margin-bottom: 10px; }
+        .video-title { font-weight: 700; margin-bottom: 5px; font-size: 15px; }
+        .video-meta { font-size: 12px; color: var(--muted); margin-bottom: 15px; display: flex; gap: 15px; }
+        .download-links { display: flex; flex-direction: column; gap: 8px; max-height: 350px; overflow-y: auto; }
+        .download-link { padding: 12px 15px; background: var(--item); border-radius: 12px; text-decoration: none; color: var(--acc); text-align: left; font-size: 13px; border: 1px solid var(--brd); transition: 0.2s; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+        .download-link:hover { background: #222; border-color: var(--acc); }
+        .download-link .size { color: var(--muted); font-size: 11px; }
+        .error-msg { color: var(--danger); font-size: 12px; margin-top: 10px; padding: 8px 12px; background: rgba(255,68,68,0.1); border-radius: 12px; display: none; }
+        .error-msg.show { display: block; }
+        .success-msg { color: var(--acc); font-size: 12px; margin-top: 10px; padding: 8px 12px; background: rgba(0,255,136,0.1); border-radius: 12px; display: none; }
+        .success-msg.show { display: block; }
+        .note { font-size: 10px; color: var(--muted); margin-top: 20px; text-align: center; border-top: 1px solid #222; padding-top: 15px; }
+        .paste-btn { background: transparent; border: 1px solid #333; color: var(--muted); padding: 4px 12px; border-radius: 20px; font-size: 10px; cursor: pointer; }
+        .paste-btn:hover { border-color: var(--acc); color: var(--acc); }
+        .button-group { display: flex; gap: 10px; }
+        .button-group .btn { flex: 1; margin-top: 0; }
+        .quality-selector { display: flex; gap: 8px; margin-top: 10px; }
+        .quality-btn { flex: 1; padding: 8px; background: var(--item); border: 1px solid var(--brd); border-radius: 20px; font-size: 11px; cursor: pointer; text-align: center; }
+        .quality-btn.active { background: var(--acc); color: #0a0a0a; border-color: var(--acc); }
+        .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid transparent; border-top-color: currentColor; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .format-badge { background: #1a3a1a; color: var(--acc); padding: 2px 8px; border-radius: 20px; font-size: 10px; }
+    </style>
+</head>
+<body>
+<div class="card">
+    <div class="ai-banner">🎬 YOUTUBE · SHORTS · СКАЧИВАНИЕ ВИДЕО И MP3</div>
+    <div class="header"><h2>🎬 YT-DL</h2><a href="/" class="back-link">← HUB</a></div>
+
+    <div class="section-title">
+        🔗 ВСТАВЬТЕ ССЫЛКУ
+        <button class="paste-btn" id="pasteBtn">📋 Вставить</button>
+    </div>
+    <input type="text" id="youtubeUrl" placeholder="youtube.com/watch?v=... или shorts/... или youtu.be/...">
+
+    <div class="quality-selector">
+        <span class="quality-btn" data-quality="360">360p</span>
+        <span class="quality-btn active" data-quality="720">720p</span>
+        <span class="quality-btn" data-quality="1080">1080p</span>
+        <span class="quality-btn" data-quality="audio">🎵 MP3</span>
+    </div>
+
+    <button class="btn btn-primary" id="fetchBtn">
+        <span id="fetchBtnText">🔍 ПОЛУЧИТЬ ССЫЛКИ</span>
+    </button>
+
+    <div class="error-msg" id="errorMsg"></div>
+    <div class="success-msg" id="successMsg"></div>
+
+    <div class="video-info" id="videoInfo">
+        <img id="thumbnail" src="" alt="thumbnail">
+        <div class="video-title" id="title">—</div>
+        <div class="video-meta">
+            <span id="duration">⏱️ —</span>
+            <span id="quality">📹 —</span>
+        </div>
+        
+        <div class="section-title">📥 ПРЯМЫЕ ССЫЛКИ</div>
+        <div class="download-links" id="downloadLinks"></div>
+        
+        <div class="section-title">🌐 ВНЕШНИЕ СЕРВИСЫ</div>
+        <div class="download-links" id="externalLinks"></div>
+        
+        <div class="button-group">
+            <button class="btn btn-small" id="copyAllBtn">📋 Копировать все</button>
+            <button class="btn btn-small" id="downloadBtn">💾 Скачать лучшее</button>
+        </div>
+    </div>
+
+    <div class="note">
+        ⚡ Cobalt API + Piped API + Y2Mate · Выбор качества · Прямые ссылки<br>
+        <span style="color: var(--acc);">✓ Поддержка Shorts · MP3 · 1080p</span>
+    </div>
+</div>
+
+<script>
+(function(){
+    "use strict";
+
+    // === DOM ЭЛЕМЕНТЫ ===
+    const urlInput = document.getElementById('youtubeUrl');
+    const fetchBtn = document.getElementById('fetchBtn');
+    const fetchBtnText = document.getElementById('fetchBtnText');
+    const videoInfo = document.getElementById('videoInfo');
+    const thumbnail = document.getElementById('thumbnail');
+    const title = document.getElementById('title');
+    const duration = document.getElementById('duration');
+    const qualitySpan = document.getElementById('quality');
+    const downloadLinks = document.getElementById('downloadLinks');
+    const externalLinks = document.getElementById('externalLinks');
+    const errorMsg = document.getElementById('errorMsg');
+    const successMsg = document.getElementById('successMsg');
+    const pasteBtn = document.getElementById('pasteBtn');
+    const copyAllBtn = document.getElementById('copyAllBtn');
+    const downloadBtn = document.getElementById('downloadBtn');
+
+    // === СОСТОЯНИЕ ===
+    let currentVideoId = null;
+    let currentVideoData = null;
+    let selectedQuality = '720';
+    let bestVideoUrl = null;
+
+    // === ВЫБОР КАЧЕСТВА ===
+    document.querySelectorAll('.quality-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.quality-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            selectedQuality = btn.dataset.quality;
+        });
+    });
+
+    // === ИЗВЛЕЧЕНИЕ VIDEO ID (ВСЕ ФОРМАТЫ) ===
+    function extractVideoId(url) {
+        if (!url) return null;
+        url = url.trim();
+        
+        const patterns = [
+            /(?:youtube\.com\/watch\?v=)([^&\s]+)/,
+            /(?:youtu\.be\/)([^?\s]+)/,
+            /(?:youtube\.com\/shorts\/)([^/?\s]+)/,
+            /(?:youtube\.com\/embed\/)([^/?\s]+)/,
+            /(?:youtube\.com\/live\/)([^/?\s]+)/,
+            /(?:m\.youtube\.com\/watch\?v=)([^&\s]+)/,
+            /[?&]v=([^&\s]+)/
+        ];
+        
+        for (let pattern of patterns) {
+            const match = url.match(pattern);
+            if (match && match[1]) {
+                return match[1].split('&')[0].split('?')[0].split('#')[0];
+            }
+        }
+        return null;
+    }
+
+    // === ФОРМАТИРОВАНИЕ ===
+    function formatDuration(seconds) {
+        if (!seconds) return '—';
+        const h = Math.floor(seconds / 3600);
+        const m = Math.floor((seconds % 3600) / 60);
+        const s = Math.floor(seconds % 60);
+        if (h > 0) return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        return `${m}:${s.toString().padStart(2, '0')}`;
+    }
+
+    function formatSize(bytes) {
+        if (!bytes) return '';
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+        if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        return (bytes / (1024 * 1024 * 1024)).toFixed(2) + ' GB';
+    }
+
+    function getQualityLabel(quality) {
+        const labels = { '360': '360p', '720': '720p HD', '1080': '1080p Full HD', 'audio': 'MP3 Audio' };
+        return labels[quality] || quality;
+    }
+
+    // === API 1: COBALT.TOOLS (ОСНОВНОЙ) ===
+    async function fetchFromCobalt(videoId, quality) {
+        const isAudio = quality === 'audio';
+        
+        const response = await fetch('https://api.cobalt.tools/api/json', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify({
+                url: `https://www.youtube.com/watch?v=${videoId}`,
+                vQuality: isAudio ? undefined : quality,
+                vCodec: isAudio ? undefined : 'h264',
+                aFormat: isAudio ? 'mp3' : undefined,
+                isAudioOnly: isAudio,
+                isNoTTWatermark: true
+            })
+        });
+        
+        if (!response.ok) throw new Error('Cobalt API error');
+        const data = await response.json();
+        
+        if (data.status === 'error' && data.text) {
+            throw new Error(data.text);
+        }
+        
+        return data;
+    }
+
+    // === API 2: PIPED (РЕЗЕРВНЫЙ) ===
+    async function fetchFromPiped(videoId) {
+        const response = await fetch(`https://pipedapi.kavin.rocks/streams/${videoId}`);
+        if (!response.ok) throw new Error('Piped API error');
+        return await response.json();
+    }
+
+    // === ОСНОВНАЯ ФУНКЦИЯ ПОЛУЧЕНИЯ ===
+    async function fetchVideoInfo() {
+        const url = urlInput.value.trim();
+        
+        // Сброс
+        errorMsg.classList.remove('show');
+        successMsg.classList.remove('show');
+        videoInfo.classList.remove('show');
+        
+        if (!url) {
+            errorMsg.textContent = '❌ Вставьте ссылку на YouTube';
+            errorMsg.classList.add('show');
+            return;
+        }
+
+        const videoId = extractVideoId(url);
+        console.log('Video ID:', videoId);
+        
+        if (!videoId) {
+            errorMsg.textContent = '❌ Неверная ссылка. Поддерживаются: youtube.com, youtu.be, shorts';
+            errorMsg.classList.add('show');
+            return;
+        }
+
+        currentVideoId = videoId;
+        fetchBtn.disabled = true;
+        fetchBtnText.innerHTML = '<span class="spinner"></span> ЗАГРУЗКА...';
+
+        try {
+            let data = null;
+            let source = '';
+            
+            // === ПРОБУЕМ COBALT ===
+            try {
+                data = await fetchFromCobalt(videoId, selectedQuality);
+                source = 'Cobalt';
+                console.log('Cobalt success:', data);
+            } catch (cobaltError) {
+                console.warn('Cobalt failed:', cobaltError);
+                
+                // === ПРОБУЕМ PIPED ===
+                try {
+                    const pipedData = await fetchFromPiped(videoId);
+                    source = 'Piped';
+                    
+                    // Конвертируем в наш формат
+                    data = {
+                        url: pipedData.videoStreams?.[0]?.url || '',
+                        audio: pipedData.audioStreams?.[0]?.url || '',
+                        filename: pipedData.title,
+                        quality: pipedData.videoStreams?.[0]?.quality || 'HD',
+                        duration: pipedData.duration,
+                        thumb: pipedData.thumbnailUrl
+                    };
+                    
+                    // Сохраняем все потоки
+                    data.allStreams = {
+                        video: pipedData.videoStreams || [],
+                        audio: pipedData.audioStreams || []
+                    };
+                    
+                } catch (pipedError) {
+                    console.warn('Piped failed:', pipedError);
+                    throw new Error('Все API недоступны');
+                }
+            }
+
+            // === ЗАПОЛНЯЕМ ИНТЕРФЕЙС ===
+            currentVideoData = data;
+            
+            // Название
+            title.textContent = data.filename || data.title || 'Видео YouTube';
+            
+            // Длительность
+            const dur = data.duration || data.length || 0;
+            duration.textContent = `⏱️ ${formatDuration(dur)}`;
+            
+            // Качество
+            qualitySpan.textContent = `📹 ${selectedQuality === 'audio' ? 'MP3' : getQualityLabel(selectedQuality)} · ${source}`;
+            
+            // Превью
+            thumbnail.src = data.thumb || data.thumbnail || `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+            
+            // === ФОРМИРУЕМ ССЫЛКИ ===
+            downloadLinks.innerHTML = '';
+            
+            // Основная ссылка
+            if (data.url) {
+                bestVideoUrl = data.url;
+                const mainLink = createDownloadLink('🎬 ВИДЕО (основное)', data.url, data.quality || selectedQuality);
+                downloadLinks.appendChild(mainLink);
+            }
+            
+            // Аудио ссылка
+            if (data.audio) {
+                const audioLink = createDownloadLink('🎵 АУДИО MP3', data.audio, 'MP3');
+                downloadLinks.appendChild(audioLink);
+            }
+            
+            // Дополнительные потоки из Piped
+            if (data.allStreams) {
+                // Видео потоки
+                data.allStreams.video.slice(0, 5).forEach(stream => {
+                    if (stream.url && stream.url !== data.url) {
+                        const link = createDownloadLink(
+                            `📹 ${stream.quality || 'Video'} · ${stream.codec || ''}`,
+                            stream.url,
+                            formatSize(stream.contentLength)
+                        );
+                        downloadLinks.appendChild(link);
+                        if (!bestVideoUrl) bestVideoUrl = stream.url;
+                    }
+                });
+                
+                // Аудио потоки
+                data.allStreams.audio.slice(0, 3).forEach(stream => {
+                    if (stream.url && stream.url !== data.audio) {
+                        const link = createDownloadLink(
+                            `🎵 ${stream.quality || 'Audio'} · ${stream.format || ''}`,
+                            stream.url,
+                            formatSize(stream.contentLength)
+                        );
+                        downloadLinks.appendChild(link);
+                    }
+                });
+            }
+            
+            // Если ничего нет
+            if (downloadLinks.children.length === 0) {
+                downloadLinks.innerHTML = '<div class="download-link" style="color: var(--muted);">Прямые ссылки недоступны. Используйте внешние сервисы.</div>';
+            }
+            
+            // === ВНЕШНИЕ СЕРВИСЫ ===
+            externalLinks.innerHTML = '';
+            const services = [
+                { name: '🌐 Cobalt.tools (Рекомендую)', url: `https://cobalt.tools/?url=https://www.youtube.com/watch?v=${videoId}` },
+                { name: '🌐 Y2Mate', url: `https://www.y2mate.com/youtube/${videoId}` },
+                { name: '🌐 SaveFrom.net', url: `https://savefrom.net/?url=https://www.youtube.com/watch?v=${videoId}` },
+                { name: '🌐 YT1s', url: `https://yt1s.com/ru/youtube-to-mp4?q=https://www.youtube.com/watch?v=${videoId}` }
+            ];
+            
+            services.forEach(s => {
+                const link = document.createElement('a');
+                link.className = 'download-link';
+                link.href = s.url;
+                link.target = '_blank';
+                link.innerHTML = `${s.name} <span class="format-badge">открыть</span>`;
+                externalLinks.appendChild(link);
+            });
+            
+            videoInfo.classList.add('show');
+            successMsg.textContent = `✅ Готово! Источник: ${source}`;
+            successMsg.classList.add('show');
+            
+        } catch (error) {
+            console.error('Final error:', error);
+            
+            // === FALLBACK: ТОЛЬКО ВНЕШНИЕ СЕРВИСЫ ===
+            title.textContent = 'Видео YouTube';
+            thumbnail.src = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+            duration.textContent = '⏱️ —';
+            qualitySpan.textContent = '📹 —';
+            
+            downloadLinks.innerHTML = '<div class="download-link" style="color: var(--muted);">API временно недоступны. Используйте:</div>';
+            
+            externalLinks.innerHTML = '';
+            const services = [
+                { name: '🌐 Cobalt.tools', url: `https://cobalt.tools/?url=https://www.youtube.com/watch?v=${videoId}` },
+                { name: '🌐 Y2Mate', url: `https://www.y2mate.com/youtube/${videoId}` },
+                { name: '🌐 SaveFrom.net', url: `https://savefrom.net/?url=https://www.youtube.com/watch?v=${videoId}` }
+            ];
+            
+            services.forEach(s => {
+                const link = document.createElement('a');
+                link.className = 'download-link';
+                link.href = s.url;
+                link.target = '_blank';
+                link.innerHTML = `${s.name} <span class="format-badge">открыть</span>`;
+                externalLinks.appendChild(link);
+            });
+            
+            videoInfo.classList.add('show');
+            errorMsg.textContent = '⚠️ API недоступны. Используйте внешние сервисы.';
+            errorMsg.classList.add('show');
+            
+        } finally {
+            fetchBtn.disabled = false;
+            fetchBtnText.textContent = '🔍 ПОЛУЧИТЬ ССЫЛКИ';
+        }
+    }
+
+    // === СОЗДАНИЕ ССЫЛКИ ДЛЯ СКАЧИВАНИЯ ===
+    function createDownloadLink(label, url, sizeInfo) {
+        const div = document.createElement('div');
+        div.className = 'download-link';
+        div.innerHTML = `
+            <span>${label}</span>
+            <span class="size">${sizeInfo || ''}</span>
+        `;
+        
+        div.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Копируем ссылку
+            navigator.clipboard?.writeText(url).then(() => {
+                successMsg.textContent = '✅ Ссылка скопирована! Открываем в новой вкладке...';
+                successMsg.classList.add('show');
+            });
+            
+            // Открываем в новой вкладке
+            window.open(url, '_blank');
+        };
+        
+        return div;
+    }
+
+    // === ВСТАВКА ИЗ БУФЕРА ===
+    pasteBtn.addEventListener('click', async () => {
+        try {
+            const text = await navigator.clipboard.readText();
+            urlInput.value = text;
+            successMsg.textContent = '✅ Ссылка вставлена!';
+            successMsg.classList.add('show');
+            setTimeout(() => successMsg.classList.remove('show'), 2000);
+        } catch (e) {
+            errorMsg.textContent = '❌ Не удалось вставить';
+            errorMsg.classList.add('show');
+        }
+    });
+
+    // === КОПИРОВАТЬ ВСЕ ССЫЛКИ ===
+    copyAllBtn.addEventListener('click', () => {
+        const links = [];
+        document.querySelectorAll('#downloadLinks .download-link').forEach(el => {
+            const text = el.textContent.trim();
+            links.push(text);
+        });
+        
+        if (links.length > 0) {
+            navigator.clipboard?.writeText(links.join('\n'));
+            successMsg.textContent = '✅ Все ссылки скопированы!';
+            successMsg.classList.add('show');
+        }
+    });
+
+    // === СКАЧАТЬ ЛУЧШЕЕ КАЧЕСТВО ===
+    downloadBtn.addEventListener('click', () => {
+        if (bestVideoUrl) {
+            window.open(bestVideoUrl, '_blank');
+            successMsg.textContent = '✅ Открываем видео...';
+            successMsg.classList.add('show');
+        } else if (currentVideoId) {
+            window.open(`https://cobalt.tools/?url=https://www.youtube.com/watch?v=${currentVideoId}`, '_blank');
+        }
+    });
+
+    // === ОБРАБОТЧИКИ ===
+    fetchBtn.addEventListener('click', fetchVideoInfo);
+    
+    urlInput.addEventListener('keydown', e => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            fetchVideoInfo();
+        }
+    });
+
+    // === АВТО-ВСТАВКА ===
+    urlInput.addEventListener('paste', () => {
+        setTimeout(() => {
+            if (urlInput.value.trim()) {
+                // Можно раскомментировать для авто-поиска
+                // fetchVideoInfo();
+            }
+        }, 100);
+    });
+
+})();
+</script>
+</body>
+</html>
